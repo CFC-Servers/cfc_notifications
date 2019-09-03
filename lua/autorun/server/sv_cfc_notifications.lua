@@ -42,3 +42,16 @@ end
 CFCNotifications.registerPopup = function( message, interval, filter )
     CFCNotifications._registerNotification( "popup", message, interval, true, filter )
 end
+
+
+local function generateFilter( ply )
+    return function()
+        return { ply }
+    end
+end
+
+local function addTestNotif( ply )
+    CFCNotifications.registerPopup( "This is a test notification!", 1, generateFilter( ply ))
+end
+
+concommand.Add( "cfc_notif", addTestNotif )
