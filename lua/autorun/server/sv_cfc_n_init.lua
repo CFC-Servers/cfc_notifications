@@ -1,9 +1,16 @@
-AddCSLuaFile("autorun/client/cl_cfc_n_init.lua")
-AddCSLuaFile("cfc_notifications/client/cl_cfc_n_render.lua")
-AddCSLuaFile("cfc_notifications/client/cl_cfc_n_net.lua")
-AddCSLuaFile("cfc_notifications/client/cl_cfc_n_save.lua")
-AddCSLuaFile("cfc_notifications/shared/sh_cfc_n_base.lua")
-AddCSLuaFile("cfc_notifications/shared/sh_cfc_n_presets.lua")
-AddCSLuaFile("cfc_notifications/shared/sh_cfc_n_scheduled.lua")
+function addFiles(dir)
+	local files, dirs = file.Find(dir .. "/*", "LUA")
+	if not files then return end
+	for k, v in pairs(files) do
+		if string.match(v, "^.+%.lua$") then
+			AddCSLuaFile(dir .. "/" .. v)
+		end
+	end
+	for k, v in pairs(dirs) do
+		addFiles(dir .. "/" .. v)
+	end
+end
+addFiles("cfc_notifications/client")
+addFiles("cfc_notifications/shared")
 
-include("cfc_notifications/shared/sh_cfc_n_base.lua")
+include("cfc_notifications/shared/sh_base.lua")
