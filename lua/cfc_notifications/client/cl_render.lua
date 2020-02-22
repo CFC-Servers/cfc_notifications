@@ -10,11 +10,11 @@ function CFCNotifications._getNewPanel( notif )
 end
 
 function CFCNotifications.isNotificationShowing( id )
-	if type( id ) == "table" then
-		-- Notif passed in, not id
-		id = id:GetID()
-	end
-	-- Do something with the id
+    if type( id ) == "table" then
+        -- Notif passed in, not id
+        id = id:GetID()
+    end
+    -- Do something with the id
 
-	return false
+    return false
 end
