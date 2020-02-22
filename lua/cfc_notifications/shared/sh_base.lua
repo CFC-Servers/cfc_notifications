@@ -10,13 +10,13 @@ CFCNotifications.PRIORITY_MAX = 4
 
 -- includes + network strs
 if SERVER then
-	util.AddNetworkString( "CFC_NotificationSend" )
+    util.AddNetworkString( "CFC_NotificationSend" )
     util.AddNetworkString( "CFC_NotificationEvent" )
     include( "cfc_notifications/client/sv_net.lua" )
 else
     include( "cfc_notifications/client/cl_net.lua" )
-	include( "cfc_notifications/client/cl_render.lua" )
-	include( "cfc_notifications/client/cl_save.lua" )
+    include( "cfc_notifications/client/cl_render.lua" )
+    include( "cfc_notifications/client/cl_save.lua" )
 end
 
 include( "sh_context.lua" )
