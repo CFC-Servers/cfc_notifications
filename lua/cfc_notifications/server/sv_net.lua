@@ -1,16 +1,14 @@
-
 local function forceWriteTable( tab )
 	for k, v in pairs( tab ) do
 		-- Just gonna skip over things we can't encode
-		if not net.WriteVars[TypeID(v)] then continue end
-	
-		net.WriteType( k )
-		net.WriteType( v )
+		if net.WriteVars[TypeID(v)] then
+			net.WriteType( k )
+			net.WriteType( v )
+		end
 	end
 	-- End of table
 	net.WriteType( nil )
 end
-
 
 function CFCNotifications._sendClients( players, notif )
 	-- WriteTable can't write functions, so we're using forceWriteTable

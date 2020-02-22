@@ -50,8 +50,9 @@ function CFCNotifications.new( id, notificationType )
 end
 
 local function fWrap( ... )
+    local data = { ... }
     return function()
-        return ...
+        return unpack( data )
     end
 end
 
