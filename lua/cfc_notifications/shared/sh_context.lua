@@ -1,5 +1,5 @@
 CFCNotifications._timerNameCount = 1
-CFCNotifications.ContextHelpers = {}
+CFCNotifications.contextHelpers = {}
 
 function CFCNotifications._getTimerName()
     local newName = "notification-timer-" .. tostring( CFCNotifications._timerNameCount )
@@ -31,17 +31,16 @@ function CONTEXT:Send( filter )
         CFCNotifications._sendClients( players, self )
     else
         -- Lets not pop up the same notification more than once
-        if not self:GetAllowMultiple() and CFCNotifications.isNotificationShowing( self ) then
+        if not self:GetAllowMultiple() and self:IsNotificationShowing( self ) then
             return
         end
 
         -- Check it's allowed to show
-        if self:GetCloseable() and not CFCNotifications._shouldShowNotification( self:GetID() ) then
+        if self:GetCloseable() and not self:ShouldShowNotification() then
             return
         end
         -- Call something in render.lua to make a panel for this notif
-        local panel = CFCNotifications._getNewPanel( self )
-        self:PopulatePanel( panel )
+        local panel = CFCNotifications._addNewPopup( self )
     end
 end
 
@@ -84,7 +83,7 @@ function CONTEXT:GetType()
 end
 
 -- Add a field (Getter, Setter and default value) to context. "name" in camelCase
-function CFCNotifications.ContextHelpers.addField( context, name, default, argType )
+function CFCNotifications.contextHelpers.addField( context, name, default, argType )
     local internalName = "_" .. name
     local externalName = string.upper( name[1] ) .. string.sub( name, 2 )
     context[internalName] = default
@@ -98,18 +97,20 @@ function CFCNotifications.ContextHelpers.addField( context, name, default, argTy
         return self[internalName]
     end
 end
-local addField = function( ... ) CFCNotifications.ContextHelpers.addField( CONTEXT, ... ) end
+local addField = function( ... ) CFCNotifications.contextHelpers.addField( CONTEXT, ... ) end
 
 addField( "closeable", true, "boolean" )
 addField( "displayTime", 5, "number" )
+addField( "timed", true, "boolean" )
 addField( "priority", CFCNotifications.PRIORITY_NORMAL, "number" )
 addField( "allowMultiple", false, "boolean" )
+addField( "ignoreable", true, "boolean" )
 
 -- Empty implementations to be overwritten in registerType
 function CONTEXT:PopulatePanel( panel ) end
 -- End
 
-function CFCNotifications.ContextHelpers.addHook( context, funcName )
+function CFCNotifications.contextHelpers.addHook( context, funcName )
     context[funcName] = function( self, ... )
         if CLIENT and self._fromServer then
             net.Start( "CFC_NotificationEvent" )
@@ -120,7 +121,7 @@ function CFCNotifications.ContextHelpers.addHook( context, funcName )
         end
     end
 end
-local addHook = function( ... ) CFCNotifications.ContextHelpers.addHook( CONTEXT, ... ) end
+local addHook = function( ... ) CFCNotifications.contextHelpers.addHook( CONTEXT, ... ) end
 
 -- Empty implementations to be overwritten in register (by you!)
 addHook( "OnClose" )
