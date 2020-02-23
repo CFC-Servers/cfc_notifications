@@ -40,7 +40,7 @@ function CONTEXT:Send( filter )
             return
         end
         -- Call something in render.lua to make a panel for this notif
-        local panel = CFCNotifications._addNewPopup( self )
+        return CFCNotifications._addNewPopup( self )
     end
 end
 

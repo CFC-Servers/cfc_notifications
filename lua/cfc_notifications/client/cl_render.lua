@@ -43,10 +43,11 @@ function CFCNotifications._addNewPopup( notif )
     panel:Populate()
 
     CFCNotifications._popupIDCounter = CFCNotifications._popupIDCounter + 1
+    local id = CFCNotifications._popupIDCounter
     local data = {
         panel = panel,
         notification = notif,
-        popupID = CFCNotifications._popupIDCounter,
+        popupID = id,
     }
 
     local idx = addData( data )
@@ -59,7 +60,7 @@ function CFCNotifications._addNewPopup( notif )
         -- Animate the panel in
     end
 
-    return true
+    return id
 end
 
 function CFCNotifications.Base:IsNotificationShowing()
