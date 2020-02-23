@@ -45,8 +45,8 @@ function CFCNotifications._addNewPopup( notif )
     CFCNotifications._popupIDCounter = CFCNotifications._popupIDCounter + 1
     local data = {
         panel = panel,
-        notification = notif
-        popupID = CFCNotifications._popupIDCounter
+        notification = notif,
+        popupID = CFCNotifications._popupIDCounter,
     }
 
     local idx = addData( data )

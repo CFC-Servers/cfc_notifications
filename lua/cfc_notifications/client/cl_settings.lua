@@ -88,7 +88,7 @@ typeValidators = {
 		else
 			return false, "Not an integer"
 		end
-	end
+	end,
 	bool = function( data, val )
 		val = string.lower( val )
 		local tVals = {"1", "true", "t"}
@@ -103,7 +103,7 @@ typeValidators = {
 	end,
 	string = function( data, val )
 		return true, val
-	end
+	end,
 }
 
 hook.Add( "Initialize", "cfc_notifications_init", function()
