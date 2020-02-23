@@ -9,18 +9,25 @@ CFCNotifications.PRIORITY_HIGH = 3
 CFCNotifications.PRIORITY_MAX = 4
 
 -- includes + network strs
+include( "sh_context.lua" )
+include( "sh_helper.lua" )
 if SERVER then
     util.AddNetworkString( "CFC_NotificationSend" )
     util.AddNetworkString( "CFC_NotificationEvent" )
     include( "cfc_notifications/client/sv_net.lua" )
 else
     include( "cfc_notifications/client/cl_net.lua" )
+    include( "cfc_notifications/client/cl_dnotificaiton.lua" )
     include( "cfc_notifications/client/cl_render.lua" )
     include( "cfc_notifications/client/cl_save.lua" )
+    include( "cfc_notifications/client/cl_settings.lua" )
 end
 
-include( "sh_context.lua" )
-include( "sh_helper.lua" )
+-- naming convention:
+-- camelCase for public methods on CFCNotifications
+-- _camelCase for private methods/tables on CFCNotifications
+-- UpperCamelCase for methods on a Notification object (CONTEXT)
+
 
 function CFCNotifications.registerNotificationType( notificationType, callback )
     local CONTEXT = table.Copy( CFCNotifications.Base )

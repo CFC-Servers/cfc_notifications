@@ -4,5 +4,5 @@ CFCNotifications.registerNotificationType( "SimpleText", function( CONTEXT )
 
         -- Use cl_render.lua to draw a simple text notification
     end
-    CFCNotifications.ContextHelpers.addField( CONTEXT, "text", "" )
+    CFCNotifications.contextHelpers.addField( CONTEXT, "text", "" )
 end )
