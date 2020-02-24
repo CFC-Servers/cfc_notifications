@@ -9,9 +9,9 @@ CFCNotifications._settingsTemplate = {
     {
         name = "size_x",
         type = "int",
-        min = 50,
-        max = 300,
-        default = 150,
+        min = 200,
+        max = 500,
+        default = 300,
     },
     {
         name = "size_y",
@@ -22,10 +22,10 @@ CFCNotifications._settingsTemplate = {
     },
     {
         name = "start_y_fraction",
-        type = "int",
+        type = "float",
         min = 0.2,
         max = 1,
-        default = 0.7,
+        default = 0.65,
     },
     {
         name = "allow_sound",
@@ -76,7 +76,7 @@ typeValidators = {
         end
     end,
     int = function( data, val )
-        local success, err = typeValidators.int( data, val )
+        local success, err = typeValidators.float( data, val )
         if not success then return false, err end
         local n = tonumber( val )
         if n % 1 == 0 then
@@ -105,14 +105,16 @@ typeValidators = {
 hook.Add( "Initialize", "cfc_notifications_init", function()
     for k, setting in pairs( CFCNotifications._settingsTemplate ) do
         local val = "cfc_notifications_" .. setting.name
-        if not ConVarExists(val) then
+        if not ConVarExists( val ) then
             local def = setting.default
             local t = setting.type
-            if type(def) == "bool" then def = def and 1 or 0 end
-            CreateClientConVar(val, def)
-            cvars.AddChangeCallback( val, function( cvar, old, new )
+            if type( def ) == "boolean" then def = def and 1 or 0 end
+            CreateClientConVar(val, tostring(def))
+            cvars.AddChangeCallback( val, function( cvarName, old, new )
+                local cvar = GetConVar( cvarName )
+                if old == new then return end
                 local validator = typeValidators[t]
-                local success, validVal = validator( new )
+                local success, validVal = validator( setting, new )
                 if success then
                     if validVal ~= new then
                         cvar:SetString( validVal )
