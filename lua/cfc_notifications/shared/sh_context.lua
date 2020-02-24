@@ -105,6 +105,7 @@ addField( "timed", true, "boolean" )
 addField( "priority", CFCNotifications.PRIORITY_NORMAL, "number" )
 addField( "allowMultiple", false, "boolean" )
 addField( "ignoreable", true, "boolean" )
+addField( "title", "Notification", "string" )
 
 -- Empty implementations to be overwritten in registerType
 function CONTEXT:PopulatePanel( panel ) end

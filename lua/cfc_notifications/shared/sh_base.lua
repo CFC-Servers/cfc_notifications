@@ -14,10 +14,10 @@ include( "sh_helper.lua" )
 if SERVER then
     util.AddNetworkString( "CFC_NotificationSend" )
     util.AddNetworkString( "CFC_NotificationEvent" )
-    include( "cfc_notifications/client/sv_net.lua" )
+    include( "cfc_notifications/server/sv_net.lua" )
 else
     include( "cfc_notifications/client/cl_net.lua" )
-    include( "cfc_notifications/client/cl_dnotificaiton.lua" )
+    include( "cfc_notifications/client/cl_dnotification.lua" )
     include( "cfc_notifications/client/cl_render.lua" )
     include( "cfc_notifications/client/cl_save.lua" )
     include( "cfc_notifications/client/cl_settings.lua" )
@@ -38,12 +38,15 @@ end
 include( "sh_presets.lua" )
 
 function CFCNotifications.new( id, notificationType )
+    if not id or not notificationType then
+        error( "No id or type provided" )
+    end
     local CONTEXT = CFCNotifications.Types[notificationType]
     if not CONTEXT then
         error( "No such notification type \"" .. notificationType .. "\"" )
     end
     if CFCNotifications.Notifications[id] then
-        error( "Notification id " .. notificationId .. " already in use")
+        --error( "Notification id " .. notificationId .. " already in use")
     end
     local notif = {}
     notif._id = id
@@ -80,5 +83,12 @@ function CFCNotifications._resolveFilter( filter )
     end
     return players
 end
+
+concommand.Add("cfc_notifications_reload", function()
+    include( "cfc_notifications/shared/sh_base.lua" )
+    timer.Simple( 0.1, function()
+        hook.Run( "CFC_Notifications_init" )
+    end )
+end )
 
 hook.Run( "CFC_Notification_Initialize" )
