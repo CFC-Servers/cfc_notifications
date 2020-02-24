@@ -84,11 +84,14 @@ function CFCNotifications._resolveFilter( filter )
     return players
 end
 
-concommand.Add("cfc_notifications_reload", function()
-    include( "cfc_notifications/shared/sh_base.lua" )
-    timer.Simple( 0.1, function()
-        hook.Run( "CFC_Notifications_init" )
+function CFCNotifications.reload()
+    -- Escape this context
+    timer.Simple( 0, function()
+        hook.Run( "CFC_Notifications_stop" )
+        include( "cfc_notifications/shared/sh_base.lua" )
+        -- Wait for new notifs to load
+        timer.Simple( 0.1, function()
+            hook.Run( "CFC_Notifications_init" )
+        end )
     end )
-end )
-
-hook.Run( "CFC_Notification_Initialize" )
+end

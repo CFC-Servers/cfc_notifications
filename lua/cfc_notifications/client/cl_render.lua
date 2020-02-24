@@ -11,6 +11,13 @@ hook.Add( "CFC_Notifications_init", "render_init", function()
     CFCNotifications.container = c
 end )
 
+hook.Add( "CFC_Notifications_stop", "render_stop", function()
+    if CFCNotifications.container then
+        CFCNotifications.container:Remove()
+        CFCNotifications.container = nil
+    end
+end )
+
 local function addData( data )
     local p = data.notification:GetPriority()
     for k, v in ipairs( CFCNotifications._popups ) do
