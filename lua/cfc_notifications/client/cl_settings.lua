@@ -1,45 +1,84 @@
+-- Full console settings manager, good practice :)
+-- Structure:
+--[[
+    {
+        displayName - Name shown in Options menu (optional if noMenu)
+        name - convar will be called "cfc_notifications_" .. name
+        type - int, float, string, bool or action (button)
+        min, max - for int and float only (optional)
+        default - default value for convar
+        onClick - for action only
+        info - tooltip information for Options menu (optional)
+        noMenu - true if setting should not be in the Options menu (optional)
+    }
+]]
 CFCNotifications._settingsTemplate = {
     {
+        displayName = "Maximum visible notifications",
         name = "max_notifications",
         type = "int",
         min = 1,
         max = 10,
         default = 3,
+        info = "maximum number of notifications showing before hiding new ones"
     },
     {
+        displayName = "Notification width",
         name = "size_x",
         type = "int",
-        min = 200,
-        max = 500,
-        default = 300,
+        min = 300,
+        max = 600,
+        default = 400,
     },
     {
+        displayName = "Notification height",
         name = "size_y",
         type = "int",
-        min = 30,
-        max = 200,
-        default = 70,
+        min = 70,
+        max = 300,
+        default = 100,
     },
     {
+        displayName = "First notification Y",
         name = "start_y_fraction",
         type = "float",
         min = 0.2,
         max = 1,
         default = 0.65,
+        info = "Percent of screen height for first notification to show at"
     },
     {
+        displayName = "Enable sounds",
         name = "allow_sound",
         type = "bool",
         default = true,
+        info = "Should notifications with priority >= min_priority_sound (below) play a sound"
     },
     {
+        displayName = "Minumum priority for sound",
         name = "min_priority_sound",
         type = "int",
         min = 1,
         max = 5,
-        default = 4
+        default = 4,
+        info = "Minumum priority required for an alert sound to play if sounds enabled"
+    },
+    {
+        name = "clear_settings_cache",
+        type = "action",
+        onClick = CFCNotifications.clearSettingsCache,
+        noMenu = true
+    },
+    {
+        displayName = "Reload CFCNotifications",
+        name = "reload",
+        type = "action",
+        onClick = CFCNotifications.reload,
+        extra = "This is required upon settings change"
     }
 }
+
+CFCNotifications._settingCache = {}
 
 local typeGetters = {
     int = function( cVar ) return cVar:GetInt() end,
@@ -49,13 +88,22 @@ local typeGetters = {
 }
 
 function CFCNotifications.getSetting( name )
+    if CFCNotifications._settingCache[name] then
+        return CFCNotifications._settingCache[name]
+    end
     local cVar = GetConVar( "cfc_notifications_" .. name )
     if not cVar then return nil end
     for k, v in pairs( CFCNotifications._settingsTemplate ) do
         if v.name == name then
-            return typeGetters[v.type]( cVar )
+            local val = typeGetters[v.type]( cVar )
+            CFCNotifications._settingCache[name] = val
+            return val
         end
     end
+end
+
+function CFCNotifications.clearSettingsCache()
+    CFCNotifications._settingCache = {}
 end
 
 local typeValidators
@@ -102,10 +150,16 @@ typeValidators = {
     end,
 }
 
+hook.Add( "CFC_Notifications_init", "settings_init", function()
+    CFCNotifications.clearSettingsCache()
+end )
+
 hook.Add( "Initialize", "cfc_notifications_init", function()
     for k, setting in pairs( CFCNotifications._settingsTemplate ) do
         local val = "cfc_notifications_" .. setting.name
-        if not ConVarExists( val ) then
+        if setting.type == "action" then
+            concommand.Add( val, setting.onClick )
+        elseif not ConVarExists( val ) then
             local def = setting.default
             local t = setting.type
             if type( def ) == "boolean" then def = def and 1 or 0 end
@@ -126,5 +180,33 @@ hook.Add( "Initialize", "cfc_notifications_init", function()
             end )
         end
     end
+    -- Let everything else run after settings are ready
     hook.Run( "CFC_Notifications_init" )
+end )
+
+hook.Add( "PopulateToolMenu", "CFCNotifications_settings", function()
+    spawnmenu.AddToolMenuOption( "Options", "CFC", "cfc_notifications", "Notifications", "", "", function( panel )
+        panel:ClearControls()
+        for k, setting in pairs( CFCNotifications._settingsTemplate ) do
+            if not setting.noMenu then
+                local val = "cfc_notifications_" .. setting.name
+                local c
+                if setting.type == "bool" then
+                    c = panel:CheckBox( setting.displayName, val )
+                elseif setting.type == "action" then
+                    c = panel:Button( setting.displayName, val )
+                elseif setting.type == "int" then
+                    c = panel:NumSlider( setting.displayName, val, setting.min or 0, setting.max or 100, 0 )
+                elseif setting.type == "float" then
+                    c = panel:NumSlider( setting.displayName, val, setting.min or 0, setting.max or 100, 2 )
+                elseif setting.type == "string" then
+                    c = panel:TextEntry( setting.displayName, val )
+                end
+
+                if setting.info then
+                    c:SetTooltip( setting.info )
+                end
+            end
+        end
+    end )
 end )
