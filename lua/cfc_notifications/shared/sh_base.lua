@@ -38,7 +38,7 @@ end
 
 -- naming convention:
 -- camelCase for methods on CFCNotifications
--- UpperCamelCase for methods on a Notification object (CONTEXT)
+-- UpperCamelCase for methods on a Notification object ( CONTEXT )
 -- prefix with _ for private
 
 function CFCNotifications.registerNotificationType( notificationType, callback )
@@ -61,7 +61,7 @@ function CFCNotifications.new( id, notificationType, forceCreate )
         if forceCreate then
             CFCNotifications.Notifications[id]:Remove()
         else
-            error( "Notification id " .. id .. " already in use. Pass true as third argument to force replace.")
+            error( "Notification id " .. id .. " already in use. Pass true as third argument to force replace." )
         end
     end
     local notif = {}
@@ -119,7 +119,7 @@ function CFCNotifications._resolveFilter( filter )
     end
     filter = filter or player.GetAll
     local players = filter()
-    if type(players) == "Player" then
+    if type( players ) == "Player" then
         players = { players }
     end
     return players

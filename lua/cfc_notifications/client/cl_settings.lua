@@ -1,15 +1,15 @@
--- Full console settings manager, good practice :)
+-- Full console settings manager, good practice : )
 -- Structure:
 --[[
     {
-        displayName - Name shown in Options menu (optional if noMenu)
+        displayName - Name shown in Options menu ( optional if noMenu )
         name - convar will be called "cfc_notifications_" .. name
-        type - int, float, string, bool or action (button)
-        min, max - for int and float only (optional)
+        type - int, float, string, bool or action ( button )
+        min, max - for int and float only ( optional )
         default - default value for convar
         onClick - for action only
-        info - tooltip information for Options menu (optional)
-        noMenu - true if setting should not be in the Options menu (optional)
+        info - tooltip information for Options menu ( optional )
+        noMenu - true if setting should not be in the Options menu ( optional )
     }
 ]]
 
@@ -70,7 +70,7 @@ CFCNotifications._settingsTemplate = {
         name = "allow_sound",
         type = "bool",
         default = true,
-        info = "Should notifications with priority >= min_priority_sound (below) play a sound",
+        info = "Should notifications with priority >= min_priority_sound ( below ) play a sound",
         noCache = true
     },
     {
@@ -190,7 +190,7 @@ typeValidators = {
     float = function( data, val )
         local n = tonumber( val )
         if n then
-            local range = "(" .. (data.min or "-inf") .. ", " .. (data.max or "inf") .. ")"
+            local range = "( " .. ( data.min or "-inf" ) .. ", " .. ( data.max or "inf" ) .. " )"
             if data.min and n < data.min then
                 return false, "Value too low, must be in range " .. range
             end
@@ -261,7 +261,7 @@ hook.Add( "Initialize", "cfc_notifications_init", function()
             local def = setting.default
             local t = setting.type
             if type( def ) == "bool" then def = def and 1 or 0 end
-            CreateClientConVar(val, tostring(def))
+            CreateClientConVar( val, tostring( def ) )
             cvars.AddChangeCallback( val, function( cvarName, old, new )
                 local cvar = GetConVar( cvarName )
                 if old == new then return end

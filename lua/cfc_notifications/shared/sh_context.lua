@@ -10,8 +10,8 @@ function CFCNotifications._getTimerName()
 end
 
 local function checkTypes( tab, t )
-    for k, v in pairs(tab) do
-        if type(v) ~= t then
+    for k, v in pairs( tab ) do
+        if type( v ) ~= t then
             return false
         end
     end
@@ -114,7 +114,7 @@ function CONTEXT:GetType()
     return self._type
 end
 
--- Add a field (Getter, Setter and default value) to context. "name" in camelCase
+-- Add a field ( Getter, Setter and default value ) to context. "name" in camelCase
 function CFCNotifications.contextHelpers.addField( context, name, default, argType, onChange )
     local internalName = "_" .. name
     local externalName = string.upper( name[1] ) .. string.sub( name, 2 )
@@ -122,10 +122,10 @@ function CFCNotifications.contextHelpers.addField( context, name, default, argTy
     context["Set" .. externalName] = function( self, v )
         if argType == "Color" then
             if not IsColor( v ) then
-                error( "Unexpected type in Set" .. externalName .. ", expected " .. argType .. ", got " .. type(v))
+                error( "Unexpected type in Set" .. externalName .. ", expected " .. argType .. ", got " .. type( v ) )
             end
         elseif type( v ) ~= argType then
-            error( "Unexpected type in Set" .. externalName .. ", expected " .. argType .. ", got " .. type(v))
+            error( "Unexpected type in Set" .. externalName .. ", expected " .. argType .. ", got " .. type( v ) )
         end
         if onChange then onChange( self, v ) end
         self[internalName] = v
@@ -176,7 +176,7 @@ function CONTEXT:_callHook( popupID, hookName, ... )
     end
 end
 
--- Empty implementations to be overwritten in register (by you!)
+-- Empty implementations to be overwritten in register ( by you! )
 
 function CONTEXT:OnClose( wasTimeout ) end
 function CONTEXT:OnOpen( popupID ) end

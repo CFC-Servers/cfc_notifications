@@ -4,23 +4,23 @@ local animSpeed = 0.2
 
 function PANEL:Init()
     self.animState = 0
-    self.bgCol = Color(0, 0, 255)
+    self.bgCol = Color( 0, 0, 255 )
     self.underlineWeight = 1
     self.clickAnimationLength = 1
     self.clickAnimState = 0
     self:SetTextColor( Color( 255, 255, 255 ) )
-    self:SetBackgroundColor( Color(100, 100, 100) )
+    self:SetBackgroundColor( Color( 100, 100, 100 ) )
 end
 
 function PANEL:Think()
     local disabled = self:GetDisabled()
     local tc = self.textCol
     if disabled then
-        self:SetCursor("no")
-        self.BaseClass.SetTextColor(self, Color(100, 100, 100))
+        self:SetCursor( "no" )
+        self.BaseClass.SetTextColor( self, Color( 100, 100, 100 ) )
     else
-        self:SetCursor("hand")
-        self.BaseClass.SetTextColor(self, tc)
+        self:SetCursor( "hand" )
+        self.BaseClass.SetTextColor( self, tc )
     end
 
     local h = self:IsHovered()
@@ -30,9 +30,9 @@ function PANEL:Think()
     self.lastT = time
     if change > 1 then change = 0 end -- If there has been > 1 second since last think, dont do the animation
     if h or self.clicked then
-        self.animState = math.Clamp(self.animState + change / animSpeed, 0, 1)
+        self.animState = math.Clamp( self.animState + change / animSpeed, 0, 1 )
     else
-        self.animState = math.Clamp(self.animState - change / animSpeed, 0, 1)
+        self.animState = math.Clamp( self.animState - change / animSpeed, 0, 1 )
     end
 
     if self.clicked then
@@ -77,7 +77,7 @@ function PANEL:Paint( w, h )
     surface.DrawRect( 0, h - uWeight - 4, w, uWeight )
 
     surface.SetDrawColor( self.textCol )
-    surface.DrawRect( w * (1 - s) * 0.5, h - uWeight - 4, w * s, uWeight )
+    surface.DrawRect( w * ( 1 - s ) * 0.5, h - uWeight - 4, w * s, uWeight )
 
 
 end
@@ -116,4 +116,4 @@ function PANEL:IsHovered()
     return x >= 0 and x <= w and y >= 0 and y <= h
 end
 
-vgui.Register("DNotificationButton", PANEL, "DButton")
+vgui.Register( "DNotificationButton", PANEL, "DButton" )
