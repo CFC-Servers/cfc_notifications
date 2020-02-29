@@ -231,17 +231,13 @@ typeValidators = {
 
 hook.Add( "CFC_Notifications_init", "settings_init", function()
     CFCNotifications.clearSettingsCache()
-    if CFCNotifications.get( "test" ) then
-        CFCNotifications.get( "test" ):Remove()
-    end
     -- displays a normal test notification that shows for 5 seconds
-    local notif = CFCNotifications.new( "test", "Text" )
-    notif:SetIgnoreable( false )
+    local notif = CFCNotifications.new( "test", "Text", true )
 
+    -- Code for button test
     --notif:SetText( "Are you sure you want to burn all life on this planet?" )
     --notif:SetIgnoreable( false )
     --notif:SetTitle( "A real question" )
-
     --notif:AddButton( "Sure, why not", Color( 0, 255, 0 ), false )
     --notif:AddButton( "Maybe later?", Color( 255, 0, 0 ), false )
     --notif:AddButton( "A third option?", Color( 0, 0, 255 ), false )
