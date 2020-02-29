@@ -7,7 +7,7 @@ local function forceWriteTable( tab )
             net.WriteType( k )
             net.WriteUInt( typeID, 8 )
             forceWriteTable( v )
-        elseif net.WriteVars[TypeID(v)] then
+        elseif net.WriteVars[TypeID( v )] then
             -- Just gonna skip over things we can't encode
             net.WriteType( k )
             net.WriteType( v )
@@ -45,7 +45,7 @@ net.Receive( "CFC_NotificationEvent", function( len, ply )
 
     if notif[funcName] then
         notif:SetCallingPopupID( popupID )
-        notif[funcName]( notif, ply, unpack(data) )
+        notif[funcName]( notif, ply, unpack( data ) )
     end
 end )
 

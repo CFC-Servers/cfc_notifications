@@ -1,4 +1,4 @@
--- Save/load notification perferences (such as "ignore this session" and "ignore forever")
+-- Save/load notification perferences ( such as "ignore this session" and "ignore forever" )
 CFCNotifications._tempIgnores = CFCNotifications._tempIgnores or {}
 CFCNotifications._permIgnores = {}
 CFCNotifications._SAVE_FILE_NAME = "cfc_notifications_data.json"
@@ -123,7 +123,7 @@ hook.Add( "CFC_Notifications_tool_menu", "add_ignore_menu", function()
     panel:Help( "Ignored notifications" )
     panel:ControlHelp( "Click an ID to remove it from your ignored notifications" )
 
-    local tempIgnoredpanel = addList( panel, "Session blacklist (cleared on disconnect)", function( id )
+    local tempIgnoredpanel = addList( panel, "Session blacklist ( cleared on disconnect )", function( id )
         CFCNotifications._tempIgnores[id] = nil
     end, function( id )
         CFCNotifications._tempIgnores[id] = nil

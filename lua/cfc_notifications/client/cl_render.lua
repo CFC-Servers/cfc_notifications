@@ -48,7 +48,7 @@ hook.Add( "PlayerButtonDown", "f3_free_cursor", function( ply, key )
     local adjustCursor = CFCNotifications.getSetting( "adjust_cursor" )
     local wide = CFCNotifications.getSetting( "size_x" )
     if adjustCursor and clickerEnabled then
-        gui.SetMousePos( ScrW() - wide - 50, ScrH() / 2)
+        gui.SetMousePos( ScrW() - wide - 50, ScrH() / 2 )
     end
     gui.EnableScreenClicker( clickerEnabled )
 end )

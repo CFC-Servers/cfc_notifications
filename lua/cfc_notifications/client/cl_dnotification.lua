@@ -46,7 +46,7 @@ function PANEL:Think()
     end
     self._thinkDeltaTime = dt
 
-    -- Incrementing time here so the timer doesn't decrement when the notification isnt visible (aka, when there's a lot of notifications at once)
+    -- Incrementing time here so the timer doesn't decrement when the notification isnt visible ( aka, when there's a lot of notifications at once )
     if not self._showTimer then return end
     if self:GetAlwaysTiming() or self:IsVisible() then
         self._curTime = self._curTime + dt
@@ -144,14 +144,14 @@ function PANEL:_makeTitleBar()
         local btn = self:_makeTitleBarButton( bar, text, cbName, unpack( textData ) )
         local w, h = btn:GetSize()
         offset = offset + w
-        btn:SetPos( barWidth - offset, (20 - h) / 2 )
+        btn:SetPos( barWidth - offset, ( 20 - h ) / 2 )
 
         if k ~= #btnTexts then
             local splitBar = vgui.Create( "DLabel", bar )
             splitBar:SetText( "|" )
             splitBar:SetTextColor( Color( 200, 200, 200 ) )
             splitBar:SizeToChildren()
-            splitBar:SetPos( barWidth - (offset + 4), 0 )
+            splitBar:SetPos( barWidth - ( offset + 4 ), 0 )
             offset = offset + 5
         end
     end
