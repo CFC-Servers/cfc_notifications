@@ -24,20 +24,20 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
     CONTEXT._priority = CFCNotifications.PRIORITY_HIGH
 
     function CONTEXT:_addDefaultButtons()
-    	self:AddButton( "Yes", Color( 0, 255, 0 ), true )
+        self:AddButton( "Yes", Color( 0, 255, 0 ), true )
         self:AddButton( "No", Color( 255, 0, 0 ), false )
     end
 
     function CONTEXT:AddButton( text, col, ... )
-    	col = col or Color( 255, 255, 255 )
-    	self._buttons = self._buttons or {}
-    	table.insert( self._buttons, {
-    		text = text,
-    		color = col,
-    		data = { ... }
-    	} )
+        col = col or Color( 255, 255, 255 )
+        self._buttons = self._buttons or {}
+        table.insert( self._buttons, {
+            text = text,
+            color = col,
+            data = { ... }
+        } )
     end
-    
+
     function CONTEXT:PopulatePanel( canvas, popupID )
         local label = Label( self:GetText(), canvas )
         label:SetFont( "CFC_Notifications_Big" )
@@ -48,7 +48,7 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
         local this = self
 
         if not self._buttons then
-        	self:_addDefaultButtons()
+            self:_addDefaultButtons()
         end
 
         local w, h = canvas:GetSize()
@@ -56,29 +56,29 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
 
         local btns = {}
 
-        for k, v in ipairs( self._buttons ) do
-        	local btn = vgui.Create( "DNotificationButton", canvas )
-        	btn:SetText( v.text )
-        	btn:SetFont( "CFC_Notifications_Big" )
-        	btn:SetTextColor( v.color )
-        	btn:SetUnderlineWeight( 2 )
-        	function btn:DoClick()
-        		if panel:GetButtonsDisabled() then return end
+        for k, btnData in ipairs( self._buttons ) do
+            local btn = vgui.Create( "DNotificationButton", canvas )
+            btn:SetText( btnData.text )
+            btn:SetFont( "CFC_Notifications_Big" )
+            btn:SetTextColor( btnData.color )
+            btn:SetUnderlineWeight( 2 )
+            function btn:DoClick()
+                if panel:GetButtonsDisabled() then return end
                 panel:SetButtonsDisabled( true )
-                for k, v in pairs( btns ) do
+                for _, v in pairs( btns ) do
                     if v ~= self then
                         v:SetDisabled( true )
                     end
                 end
                 -- Delay the close to see the button animation, make it clear that the button is what was selected
                 timer.Simple( 0.5, function()
-            		CFCNotifications._removePopup( panel )
+                    CFCNotifications._removePopup( panel )
                 end )
 
-                this:_callHook( popupID, "OnButtonPressed", unpack( v.data or { v.text } ) )
-        	end
-        	btn:SetSize( btnW - 20, 30 )
-        	btn:SetPos( 10 + ( k - 1 ) * btnW, h * 0.75 - 15 )
+                this:_callHook( popupID, "OnButtonPressed", unpack( btnData.data or { btnData.text } ) )
+            end
+            btn:SetSize( btnW - 20, 30 )
+            btn:SetPos( 10 + ( k - 1 ) * btnW, h * 0.75 - 15 )
             table.insert( btns, btn )
         end
     end

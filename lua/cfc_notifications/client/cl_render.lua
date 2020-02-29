@@ -58,7 +58,7 @@ end
 hook.Add( "CFC_Notifications_init", "render_init", function()
     local wide = CFCNotifications.getSetting( "size_x" )
     local h = CFCNotifications.getSetting( "start_y_fraction" ) * ScrH()
-    
+
     local container = vgui.Create( "DPanel" )
     container.Paint = nil
     container:SetSize( wide, h )
@@ -83,7 +83,7 @@ hook.Add( "CFC_Notifications_init", "render_init", function()
 
     function othersLabel:Think()
         local maxNotif = CFCNotifications.getSetting( "max_notifications" )
-        if #CFCNotifications._popups > maxNotif then 
+        if #CFCNotifications._popups > maxNotif then
             local count = -1
             for k = #CFCNotifications._popups, 1, -1 do
                 count = count + 1
@@ -164,7 +164,7 @@ local function addNotifHooks( panel, popupID )
         local x, y = self:GetPos()
         local tx, ty = self._targetX, self._targetY
         if not tx then return end
-        
+
         local changed = false
         if tx ~= x then
             changed = true
@@ -213,7 +213,7 @@ local function addNotifHooks( panel, popupID )
     function panel:OnTimeout()
         -- Other hooks won't be called with buttons disabled, this still will though, so ignore it.
         if self:GetButtonsDisabled() then return end
-        
+
         self.data.notification:_callHook( popupID, "OnClose", true )
         CFCNotifications._removePopup( panel )
     end

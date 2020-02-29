@@ -11,147 +11,147 @@ function CFCNotifications.Base:ShouldShowNotification()
 end
 
 function CFCNotifications.Base:Ignore( permanent )
-	local id = self:GetID()
+    local id = self:GetID()
 
-	if permanent then
-		CFCNotifications._permIgnores[id] = true
-		CFCNotifications.saveIgnores()
-	else
-		CFCNotifications._tempIgnores[id] = true
-	end
-	CFCNotifications._reloadIgnoredPanels()
+    if permanent then
+        CFCNotifications._permIgnores[id] = true
+        CFCNotifications.saveIgnores()
+    else
+        CFCNotifications._tempIgnores[id] = true
+    end
+    CFCNotifications._reloadIgnoredPanels()
 end
 
 function CFCNotifications.Base:Unignore()
-	local id = self:GetID()
+    local id = self:GetID()
 
-	CFCNotifications._tempIgnores[id] = nil
-	if CFCNotifications._permIgnores[id] then
-		CFCNotifications._permIgnores[id] = nil
-		CFCNotifications.saveIgnores()
-	end
-	CFCNotifications._reloadIgnoredPanels()
+    CFCNotifications._tempIgnores[id] = nil
+    if CFCNotifications._permIgnores[id] then
+        CFCNotifications._permIgnores[id] = nil
+        CFCNotifications.saveIgnores()
+    end
+    CFCNotifications._reloadIgnoredPanels()
 end
 
 function CFCNotifications.saveIgnores()
-	local strData = util.TableToJSON( table.GetKeys( CFCNotifications._permIgnores ) )
-	file.Write( CFCNotifications._SAVE_FILE_NAME, strData )
+    local strData = util.TableToJSON( table.GetKeys( CFCNotifications._permIgnores ) )
+    file.Write( CFCNotifications._SAVE_FILE_NAME, strData )
 end
 
 function CFCNotifications.loadIgnores()
-	local strData = file.Read( CFCNotifications._SAVE_FILE_NAME )
-	if not strData then return end
-	local data = util.JSONToTable( strData )
-	for k = 1, #data do
-		CFCNotifications._permIgnores[data[k]] = true
-	end
-	CFCNotifications._reloadIgnoredPanels()
+    local strData = file.Read( CFCNotifications._SAVE_FILE_NAME )
+    if not strData then return end
+    local data = util.JSONToTable( strData )
+    for k = 1, #data do
+        CFCNotifications._permIgnores[data[k]] = true
+    end
+    CFCNotifications._reloadIgnoredPanels()
 end
 
 function CFCNotifications.getTempIgnored()
-	return table.GetKeys( CFCNotifications._tempIgnores )
+    return table.GetKeys( CFCNotifications._tempIgnores )
 end
 
 function CFCNotifications.getPermIgnored()
-	return table.GetKeys( CFCNotifications._permIgnores )
+    return table.GetKeys( CFCNotifications._permIgnores )
 end
 
 function CFCNotifications.getUnignored()
-	local out = {}
-	for k, v in pairs( CFCNotifications.Notifications ) do
-		if not CFCNotifications._tempIgnores[k] and not CFCNotifications._permIgnores[k] and v:GetIgnoreable() then
-			table.insert( out, k )
-		end
-	end
-	for k, v in pairs( CFCNotifications._serverNotificationIDs ) do
-		if not CFCNotifications._tempIgnores[v] and not CFCNotifications._permIgnores[v] and not table.HasValue( out, v ) then
-			table.insert( out, v )
-		end
-	end
-	return out
+    local out = {}
+    for k, v in pairs( CFCNotifications.Notifications ) do
+        if not CFCNotifications._tempIgnores[k] and not CFCNotifications._permIgnores[k] and v:GetIgnoreable() then
+            table.insert( out, k )
+        end
+    end
+    for k, v in pairs( CFCNotifications._serverNotificationIDs ) do
+        if not CFCNotifications._tempIgnores[v] and not CFCNotifications._permIgnores[v] and not table.HasValue( out, v ) then
+            table.insert( out, v )
+        end
+    end
+    return out
 end
 
 local panels = {}
 
 function CFCNotifications._reloadIgnoredPanels()
-	if #panels == 0 then return end
-	panels[1]:Clear()
-	for k, v in ipairs( CFCNotifications.getTempIgnored() ) do
-		panels[1]:AddItem( v )
-	end
-	panels[2]:Clear()
-	for k, v in ipairs( CFCNotifications.getPermIgnored() ) do
-		panels[2]:AddItem( v )
-	end
-	panels[3]:Clear()
-	for k, v in ipairs( CFCNotifications.getUnignored() ) do
-		panels[3]:AddItem( v )
-	end
+    if #panels == 0 then return end
+    panels[1]:Clear()
+    for k, v in ipairs( CFCNotifications.getTempIgnored() ) do
+        panels[1]:AddItem( v )
+    end
+    panels[2]:Clear()
+    for k, v in ipairs( CFCNotifications.getPermIgnored() ) do
+        panels[2]:AddItem( v )
+    end
+    panels[3]:Clear()
+    for k, v in ipairs( CFCNotifications.getUnignored() ) do
+        panels[3]:AddItem( v )
+    end
 end
 
 hook.Add( "CFC_Notifications_init", "CFCNotifications_load_ignores", CFCNotifications.loadIgnores )
 
 local function addList( panel, name, onLeft, onRight )
-	local list = panel:ListView( name )
-	list:SetSize( 100, 100 )
-	list:SetMultiSelect( false )
+    local list = panel:ListView( name )
+    list:SetSize( 100, 100 )
+    list:SetMultiSelect( false )
 
-	function list:OnRowSelected( idx, row )
-		timer.Simple( 0, function()
-			if not row:IsValid() then return end
-			self:ClearSelection()
-			local id = row:GetColumnText( 1 )
-			self:RemoveLine( idx )
-			onLeft( id )
-			CFCNotifications._reloadIgnoredPanels()
-		end )
-	end
+    function list:OnRowSelected( idx, row )
+        timer.Simple( 0, function()
+            if not row:IsValid() then return end
+            self:ClearSelection()
+            local id = row:GetColumnText( 1 )
+            self:RemoveLine( idx )
+            onLeft( id )
+            CFCNotifications._reloadIgnoredPanels()
+        end )
+    end
 
-	function list:OnRowRightClick( idx, row )
-		self:ClearSelection()
-		local id = row:GetColumnText( 1 )
-		self:RemoveLine( idx )
-		onRight( id )
-		CFCNotifications._reloadIgnoredPanels()
-	end
+    function list:OnRowRightClick( idx, row )
+        self:ClearSelection()
+        local id = row:GetColumnText( 1 )
+        self:RemoveLine( idx )
+        onRight( id )
+        CFCNotifications._reloadIgnoredPanels()
+    end
 
-	return list
+    return list
 end
 
-hook.Add( "CFC_Notifications_tool_menu", "add_ignore_menu", function( panel )
-	local panel = CFCNotifications.addOptionsCategory( "Blacklist")
-	panel:Help( "Ignored notifications" )
-	panel:ControlHelp( "Click an ID to remove it from your ignored notifications" )
+hook.Add( "CFC_Notifications_tool_menu", "add_ignore_menu", function()
+    local panel = CFCNotifications.addOptionsCategory( "Blacklist" )
+    panel:Help( "Ignored notifications" )
+    panel:ControlHelp( "Click an ID to remove it from your ignored notifications" )
 
-	local tempIgnoredpanel = addList( panel, "Temporary blacklist (Cleared on leave)", function( id )
-		CFCNotifications._tempIgnores[id] = nil
-	end, function( id )
-		CFCNotifications._tempIgnores[id] = nil
-		CFCNotifications._permIgnores[id] = true
-		CFCNotifications.saveIgnores()
-	end )
+    local tempIgnoredpanel = addList( panel, "Temporary blacklist (Cleared on leave)", function( id )
+        CFCNotifications._tempIgnores[id] = nil
+    end, function( id )
+        CFCNotifications._tempIgnores[id] = nil
+        CFCNotifications._permIgnores[id] = true
+        CFCNotifications.saveIgnores()
+    end )
 
-	local permIgnoredpanel = addList( panel, "Permanent blacklist", function( id )
-		CFCNotifications._permIgnores[id] = nil
-		CFCNotifications.saveIgnores()
-	end, function( id )
-		CFCNotifications._permIgnores[id] = nil
-		CFCNotifications._tempIgnores[id] = true
-		CFCNotifications.saveIgnores()
-	end )
+    local permIgnoredpanel = addList( panel, "Permanent blacklist", function( id )
+        CFCNotifications._permIgnores[id] = nil
+        CFCNotifications.saveIgnores()
+    end, function( id )
+        CFCNotifications._permIgnores[id] = nil
+        CFCNotifications._tempIgnores[id] = true
+        CFCNotifications.saveIgnores()
+    end )
 
 
-	panel:Help( "Non-ignored notifications" )
-	panel:ControlHelp( "Left click an ID to ignore temporarily, right click for permanent" )
+    panel:Help( "Non-ignored notifications" )
+    panel:ControlHelp( "Left click an ID to ignore temporarily, right click for permanent" )
 
-	local Unignoredpanel = addList( panel, "Permanent whitelist", function( id )
-		CFCNotifications._tempIgnores[id] = true
-	end, function( id )
-		CFCNotifications._permIgnores[id] = true
-		CFCNotifications.saveIgnores()
-	end )
+    local Unignoredpanel = addList( panel, "Permanent whitelist", function( id )
+        CFCNotifications._tempIgnores[id] = true
+    end, function( id )
+        CFCNotifications._permIgnores[id] = true
+        CFCNotifications.saveIgnores()
+    end )
 
-	panels = { tempIgnoredpanel, permIgnoredpanel, Unignoredpanel }
+    panels = { tempIgnoredpanel, permIgnoredpanel, Unignoredpanel }
 
-	CFCNotifications._reloadIgnoredPanels()
+    CFCNotifications._reloadIgnoredPanels()
 end )

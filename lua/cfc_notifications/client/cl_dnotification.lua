@@ -65,7 +65,7 @@ end
 function PANEL:Paint( w, h )
     solidColorPaint( self, w, h )
     if not self._showTimer then return end
-    
+
     local frac = self._curTime / self._maxTime
     local barHeight = 4
     surface.SetDrawColor( Color( 180, 180, 180, 150 ) )

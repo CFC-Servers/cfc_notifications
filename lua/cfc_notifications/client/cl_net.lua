@@ -13,16 +13,16 @@ end )
 CFCNotifications._serverNotificationIDs = {}
 
 net.Receive( "CFC_NotificationExists", function( len )
-	local id = net.ReadString()
-	local exists = net.ReadBool()
-	local hasValue = table.HasValue( CFCNotifications._serverNotificationIDs, id )
-	if exists and not hasValue then
-		table.insert( CFCNotifications._serverNotificationIDs, id )
-		CFCNotifications._reloadIgnoredPanels()
-	elseif not exists and hasValue then
-		table.RemoveByValue( CFCNotifications._serverNotificationIDs, id )
-		CFCNotifications._reloadIgnoredPanels()
-	end
+    local id = net.ReadString()
+    local exists = net.ReadBool()
+    local hasValue = table.HasValue( CFCNotifications._serverNotificationIDs, id )
+    if exists and not hasValue then
+        table.insert( CFCNotifications._serverNotificationIDs, id )
+        CFCNotifications._reloadIgnoredPanels()
+    elseif not exists and hasValue then
+        table.RemoveByValue( CFCNotifications._serverNotificationIDs, id )
+        CFCNotifications._reloadIgnoredPanels()
+    end
 end )
 
 net.Receive( "CFC_NotificationEvent", function( len )
@@ -31,8 +31,8 @@ net.Receive( "CFC_NotificationEvent", function( len )
     local data = net.ReadTable()
 
     if funcName == "RemovePopup" then
-    	local popupID = data[1]
-    	if popupID then
+        local popupID = data[1]
+        if popupID then
             CFCNotifications._removePopupByID( popupID )
         else
             CFCNotifications._removePopupByNotificationID( id )
