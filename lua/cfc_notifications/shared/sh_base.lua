@@ -2,15 +2,15 @@ CFCNotifications = CFCNotifications or {}
 CFCNotifications.Types = {}
 CFCNotifications.Notifications = {}
 
-CFCNotifications.PRIORITY_MIN = 0
-CFCNotifications.PRIORITY_LOW = 1
-CFCNotifications.PRIORITY_NORMAL = 2
-CFCNotifications.PRIORITY_HIGH = 3
-CFCNotifications.PRIORITY_MAX = 4
+CFCNotifications.PRIORITY_MIN = 1
+CFCNotifications.PRIORITY_LOW = 2
+CFCNotifications.PRIORITY_NORMAL = 3
+CFCNotifications.PRIORITY_HIGH = 4
+CFCNotifications.PRIORITY_MAX = 5
 
 --[[
 TODO
-    nothing?    
+    nothing?
 ]]
 
 -- includes + network strs
