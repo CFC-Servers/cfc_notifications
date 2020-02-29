@@ -129,10 +129,10 @@ function PANEL:_makeTitleBar()
     local btnTexts = {}
     if self:GetCloseable() then
         table.insert( btnTexts, { "discard", "OnClose" } )
-    end
-    if self:GetIgnoreable() then
-        table.insert( btnTexts, { "mute", "OnIgnore", true } )
-        table.insert( btnTexts, { "temporary mute", "OnIgnore" } )
+        if self:GetIgnoreable() then
+            table.insert( btnTexts, { "mute", "OnIgnore", true } )
+            table.insert( btnTexts, { "temporary mute", "OnIgnore" } )
+        end
     end
 
     local offset = 2

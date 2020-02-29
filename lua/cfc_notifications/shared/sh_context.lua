@@ -127,8 +127,8 @@ function CFCNotifications.contextHelpers.addField( context, name, default, argTy
         elseif type( v ) ~= argType then
             error( "Unexpected type in Set" .. externalName .. ", expected " .. argType .. ", got " .. type( v ) )
         end
-        if onChange then onChange( self, v ) end
         self[internalName] = v
+        if onChange then onChange( self, v ) end
     end
     context["Get" .. externalName] = function( self )
         return self[internalName]
@@ -136,7 +136,6 @@ function CFCNotifications.contextHelpers.addField( context, name, default, argTy
 end
 local addField = function( ... ) CFCNotifications.contextHelpers.addField( CONTEXT, ... ) end
 
-addField( "closeable", true, "boolean" )
 addField( "displayTime", 5, "number" )
 addField( "timed", true, "boolean" )
 addField( "priority", CFCNotifications.PRIORITY_NORMAL, "number" )
@@ -144,17 +143,23 @@ addField( "allowMultiple", false, "boolean" )
 addField( "title", "Notification", "string" )
 addField( "alwaysTiming", false, "boolean" )
 addField( "callingPopupID", -1, "number" )
-addField( "ignoreable", true, "boolean", function( self, newVal )
+
+local function ignoreableChanged( self )
     if SERVER then
         -- Delay as often called directly after new, which sends a message
         timer.Simple( 0.1, function()
             net.Start( "CFC_NotificationExists" )
             net.WriteString( self:GetID() )
-            net.WriteBool( newVal )
+            net.WriteBool( self:GetIgnoreable() and self:GetCloseable() )
             net.Broadcast()
         end )
     end
-end )
+end 
+
+addField( "closeable", true, "boolean", ignoreableChanged )
+addField( "ignoreable", true, "boolean", ignoreableChanged )
+
+
 
 -- Empty implementations to be overwritten in registerType
 function CONTEXT:PopulatePanel( panel ) end
