@@ -154,7 +154,7 @@ local function ignoreableChanged( self )
             net.Broadcast()
         end )
     end
-end 
+end
 
 addField( "closeable", true, "boolean", ignoreableChanged )
 addField( "ignoreable", true, "boolean", ignoreableChanged )
