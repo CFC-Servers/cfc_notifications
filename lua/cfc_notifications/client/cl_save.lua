@@ -59,7 +59,7 @@ end
 function CFCNotifications.getUnignored()
     local out = {}
     for k, v in pairs( CFCNotifications.Notifications ) do
-        if not CFCNotifications._tempIgnores[k] and not CFCNotifications._permIgnores[k] and v:GetIgnoreable() then
+        if not CFCNotifications._tempIgnores[k] and not CFCNotifications._permIgnores[k] and v:GetCloseable() and v:GetIgnoreable() then
             table.insert( out, k )
         end
     end
