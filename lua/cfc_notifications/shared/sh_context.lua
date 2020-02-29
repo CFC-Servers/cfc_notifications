@@ -22,7 +22,6 @@ local CONTEXT = {}
 CFCNotifications.Base = CONTEXT
 
 function CONTEXT:Remove()
-    CFCNotifications.Notifications[self:GetID()] = nil
     if SERVER then
         for k, v in pairs( player.GetAll() ) do
             self:RemovePopups( v )
@@ -35,6 +34,7 @@ function CONTEXT:Remove()
         self:RemovePopups()
         CFCNotifications._reloadIgnoredPanels()
     end
+    CFCNotifications.Notifications[self:GetID()] = nil
 end
 
 function CONTEXT:RemovePopup( id, ply )
@@ -176,7 +176,7 @@ function CONTEXT:_callHook( popupID, hookName, ... )
     else
         if self[hookName] then
             self:SetCallingPopupID( popupID )
-            self[hookName]( ... )
+            self[hookName]( self, ... )
         end
     end
 end

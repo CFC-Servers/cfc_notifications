@@ -38,7 +38,7 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
         } )
     end
 
-    function CONTEXT:PopulatePanel( canvas, popupID )
+    function CONTEXT:PopulatePanel( canvas, popupID, panel )
         local label = Label( self:GetText(), canvas )
         label:SetFont( "CFC_Notifications_Big" )
         label:SizeToContents()

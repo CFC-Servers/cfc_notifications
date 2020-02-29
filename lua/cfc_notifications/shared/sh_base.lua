@@ -8,10 +8,10 @@ CFCNotifications.PRIORITY_NORMAL = 3
 CFCNotifications.PRIORITY_HIGH = 4
 CFCNotifications.PRIORITY_MAX = 5
 
---[[
-TODO
-    nothing?
-]]
+-- naming convention:
+-- camelCase for methods on CFCNotifications
+-- UpperCamelCase for methods on a Notification object ( CONTEXT )
+-- prefix with _ for private
 
 -- includes + network strs
 include( "sh_context.lua" )
@@ -35,11 +35,6 @@ else
         net.SendToServer()
     end )
 end
-
--- naming convention:
--- camelCase for methods on CFCNotifications
--- UpperCamelCase for methods on a Notification object ( CONTEXT )
--- prefix with _ for private
 
 function CFCNotifications.registerNotificationType( notificationType, callback )
     local CONTEXT = table.Copy( CFCNotifications.Base )
