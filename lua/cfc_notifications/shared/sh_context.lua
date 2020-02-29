@@ -21,6 +21,38 @@ end
 local CONTEXT = {}
 CFCNotifications.Base = CONTEXT
 
+function CONTEXT:Remove()
+    CFCNotifications.Notifications[self:GetID()] = nil
+    if SERVER then
+        for k, v in pairs( player.GetAll() ) do
+            self:RemovePopups( v )
+        end
+        net.Start( "CFC_NotificationExists" )
+        net.WriteString( self:GetID() )
+        net.WriteBool( false )
+        net.Broadcast()
+    else
+        self:RemovePopups()
+        CFCNotifications._reloadIgnoredPanels()
+    end
+end
+
+function CONTEXT:RemovePopup( id, ply )
+    if SERVER then
+        self:_callClient( ply, "RemovePopup", id )
+    else
+        if id then
+            CFCNotifications._removePopupByID( id )
+        else
+            CFCNotifications._removePopupByNotificationID( self:GetID() )
+        end
+    end
+end
+
+function CONTEXT:RemovePopups( ply )
+    self:RemovePopup( nil, ply )
+end
+
 function CONTEXT:Send( filter )
     if SERVER then
         local players = CFCNotifications._resolveFilter( filter )
@@ -55,7 +87,7 @@ function CONTEXT:SendRepeated( delay, reps, filter )
     self._timerName = CFCNotifications._getTimerName()
     timer.Create( self._timerName, delay, reps, function()
         self:Send( filter )
-        if timer.RepsLeft( self._timerName ) == 1 then -- This might need to be 0, untested
+        if timer.RepsLeft( self._timerName ) == 0 then
             self._timerName = nil
         end
     end )
@@ -83,17 +115,22 @@ function CONTEXT:GetType()
 end
 
 -- Add a field (Getter, Setter and default value) to context. "name" in camelCase
-function CFCNotifications.contextHelpers.addField( context, name, default, argType )
+function CFCNotifications.contextHelpers.addField( context, name, default, argType, onChange )
     local internalName = "_" .. name
     local externalName = string.upper( name[1] ) .. string.sub( name, 2 )
     context[internalName] = default
-    context["Set" .. externalName] = function(self, v)
-        if type(v) ~= argType then
+    context["Set" .. externalName] = function( self, v )
+        if argType == "Color" then
+            if not IsColor( v ) then
+                error( "Unexpected type in Set" .. externalName .. ", expected " .. argType .. ", got " .. type(v))
+            end
+        elseif type( v ) ~= argType then
             error( "Unexpected type in Set" .. externalName .. ", expected " .. argType .. ", got " .. type(v))
         end
+        if onChange then onChange( self, v ) end
         self[internalName] = v
     end
-    context["Get" .. externalName] = function(self)
+    context["Get" .. externalName] = function( self )
         return self[internalName]
     end
 end
@@ -104,26 +141,43 @@ addField( "displayTime", 5, "number" )
 addField( "timed", true, "boolean" )
 addField( "priority", CFCNotifications.PRIORITY_NORMAL, "number" )
 addField( "allowMultiple", false, "boolean" )
-addField( "ignoreable", true, "boolean" )
 addField( "title", "Notification", "string" )
+addField( "alwaysTiming", false, "boolean" )
+addField( "callingPopupID", -1, "number" )
+addField( "ignoreable", true, "boolean", function( self, newVal )
+    if SERVER then
+        -- Delay as often called directly after new, which sends a message
+        timer.Simple( 0.1, function()
+            net.Start( "CFC_NotificationExists" )
+            net.WriteString( self:GetID() )
+            net.WriteBool( newVal )
+            net.Broadcast()
+        end )
+    end
+end )
 
 -- Empty implementations to be overwritten in registerType
 function CONTEXT:PopulatePanel( panel ) end
 -- End
 
-function CFCNotifications.contextHelpers.addHook( context, funcName )
-    context[funcName] = function( self, ... )
-        if CLIENT and self._fromServer then
-            net.Start( "CFC_NotificationEvent" )
-            net.WriteString( funcName )
-            net.WriteString( self:GetID() )
-            net.WriteTable( { ... } )
-            net.SendToServer()
+function CONTEXT:_callHook( popupID, hookName, ... )
+    if self._fromServer then
+        net.Start( "CFC_NotificationEvent" )
+        net.WriteString( self:GetID() )
+        net.WriteUInt( popupID, 16 )
+        net.WriteString( hookName )
+        net.WriteTable( { ... } )
+        net.SendToServer()
+    else
+        if self[hookName] then
+            self:SetCallingPopupID( popupID )
+            self[hookName]( ... )
         end
     end
 end
-local addHook = function( ... ) CFCNotifications.contextHelpers.addHook( CONTEXT, ... ) end
 
 -- Empty implementations to be overwritten in register (by you!)
-addHook( "OnClose" )
+
+function CONTEXT:OnClose( wasTimeout ) end
+function CONTEXT:OnOpen( popupID ) end
 -- End

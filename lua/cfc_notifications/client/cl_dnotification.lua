@@ -1,23 +1,5 @@
 local PANEL = {}
 
-surface.CreateFont( "CFC_Notifications_Title", {
-    font = "Roboto",
-    size = 17,
-    weight = 500
-} )
-
-surface.CreateFont( "CFC_Notifications_Normal", {
-    font = "Roboto",
-    size = 14,
-    weight = 500
-} )
-
-surface.CreateFont( "CFC_Notifications_Mono", {
-    font = "Lucida Console",
-    size = 14,
-    weight = 500
-} )
-
 local function solidColorPaint( self, w, h )
     surface.SetDrawColor( self:GetBackgroundColor() )
     surface.DrawRect( 0, 0, w, h )
@@ -45,25 +27,29 @@ end
 CFCNotifications.contextHelpers.addField( PANEL, "title", "Notification", "string" )
 CFCNotifications.contextHelpers.addField( PANEL, "ignoreable", true, "boolean" )
 CFCNotifications.contextHelpers.addField( PANEL, "closeable", true, "boolean" )
+CFCNotifications.contextHelpers.addField( PANEL, "buttonsDisabled", false, "boolean" )
+CFCNotifications.contextHelpers.addField( PANEL, "alwaysTiming", false, "boolean" )
 
 function PANEL:GetCanvas()
     return self._canvas
 end
 
-function PANEL:Paint( w, h )
-    solidColorPaint( self, w, h )
-    if not self._showTimer then return end
+function PANEL:Think()
     local ct = SysTime()
-    local pt = self._prevPaintTime or 0
+    local pt = self._prevThinkTime or 0
     local dt = ct - pt
-    self._prevPaintTime = ct
+    self._prevThinkTime = ct
     if dt > 0.5 then
         -- Too much time passed between paint, probably wasn't visible
         dt = 0
     end
+    self._thinkDeltaTime = dt
 
     -- Incrementing time here so the timer doesn't decrement when the notification isnt visible (aka, when there's a lot of notifications at once)
-    self._curTime = self._curTime + dt
+    if not self._showTimer then return end
+    if self:GetAlwaysTiming() or self:IsVisible() then
+        self._curTime = self._curTime + dt
+    end
 
     if self._curTime > self._maxTime then
         self._curTime = self._maxTime
@@ -74,7 +60,12 @@ function PANEL:Paint( w, h )
             end
         end
     end
+end
 
+function PANEL:Paint( w, h )
+    solidColorPaint( self, w, h )
+    if not self._showTimer then return end
+    
     local frac = self._curTime / self._maxTime
     local barHeight = 4
     surface.SetDrawColor( Color( 180, 180, 180, 150 ) )
@@ -87,16 +78,18 @@ function PANEL:Paint( w, h )
     draw.DrawText( remainingStr, "CFC_Notifications_Mono", w - 44, h - 20, Color( 180, 180, 180 ) )
 end
 
-local function makeTitleBarButton( self, text, cbName, ... )
-    local btn = vgui.Create( "DButton", self )
+function PANEL:_makeTitleBarButton( bar, text, cbName, ... )
+    local btn = vgui.Create( "DButton", bar )
     btn:SetText( text )
     btn:SetFont( "CFC_Notifications_Normal" )
     btn:SetTextColor( Color( 210, 210, 210 ) )
     btn.Paint = nil
+
+    local this = self
     local data = { ... }
     function btn:DoClick()
-        if btn[cbName] then
-            btn[cbName]( self, unpack( data ) )
+        if not this:GetButtonsDisabled() and this[cbName] then
+            this[cbName]( this, unpack( data ) )
         end
     end
     function btn:Think()
@@ -117,7 +110,7 @@ local function makeTitleBarButton( self, text, cbName, ... )
     return btn
 end
 
-local function makeTitleBar( self )
+function PANEL:_makeTitleBar()
     local bar = vgui.Create( "DPanel", self )
     bar:SetSize( self:GetWide(), 20 )
     bar:Dock( TOP )
@@ -147,7 +140,7 @@ local function makeTitleBar( self )
         local textData = btnTexts[k]
         local text = table.remove( textData, 1 )
         local cbName = table.remove( textData, 1 )
-        local btn = makeTitleBarButton( bar, text, cbName, unpack( textData ) )
+        local btn = self:_makeTitleBarButton( bar, text, cbName, unpack( textData ) )
         local w, h = btn:GetSize()
         offset = offset + w
         btn:SetPos( barWidth - offset, (20 - h) / 2 )
@@ -166,7 +159,7 @@ local function makeTitleBar( self )
 end
 
 function PANEL:Populate()
-    self._titleBar = makeTitleBar( self )
+    self._titleBar = self:_makeTitleBar()
 
     self._canvas = vgui.Create( "DPanel", self )
     self._canvas.Paint = nil

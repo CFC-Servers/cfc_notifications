@@ -12,9 +12,27 @@
         noMenu - true if setting should not be in the Options menu (optional)
     }
 ]]
+
+CFCNotifications._testMessages = {
+    "Hey! A notification!",
+    "This is a test.",
+    "Hello world",
+    "Goodbye universe",
+    "Ping!",
+    "Hey. Wake up.",
+    "But How do it Know?",
+    "Stop breaking the rules!",
+    "The answer is 42, but what is the question?",
+    "Tell legokidlogan to remove his minecraft e2",
+    "Go ask Clashmecha how PhatTale is going!",
+    "Tell Phatso to go to sleep"
+}
+
+CFCNotifications._cacheInvalid = false
+
 CFCNotifications._settingsTemplate = {
     {
-        displayName = "Maximum visible notifications",
+        displayName = "Max visible notifications",
         name = "max_notifications",
         type = "int",
         min = 1,
@@ -52,29 +70,69 @@ CFCNotifications._settingsTemplate = {
         name = "allow_sound",
         type = "bool",
         default = true,
-        info = "Should notifications with priority >= min_priority_sound (below) play a sound"
+        info = "Should notifications with priority >= min_priority_sound (below) play a sound",
+        noCache = true
     },
     {
-        displayName = "Minumum priority for sound",
+        displayName = "Min priority sound",
         name = "min_priority_sound",
         type = "int",
         min = 1,
         max = 5,
         default = 4,
-        info = "Minumum priority required for an alert sound to play if sounds enabled"
+        info = "Minumum priority required for an alert sound to play if sounds enabled",
+        noCache = true
+    },
+    {
+        displayName = "Adjusted cursor pos",
+        name = "adjust_cursor",
+        type = "bool",
+        default = true,
+        info = "Should your cursor position be next to notifications when pressing f3, rather than screen center",
+        noCache = true
     },
     {
         name = "clear_settings_cache",
         type = "action",
-        onClick = CFCNotifications.clearSettingsCache,
+        onClick = function()
+            CFCNotifications.clearSettingsCache()
+        end,
         noMenu = true
     },
     {
-        displayName = "Reload CFCNotifications",
-        name = "reload",
+        displayName = "Show test notification",
+        name = "test",
         type = "action",
-        onClick = CFCNotifications.reload,
-        extra = "This is required upon settings change"
+        onClick = function()
+            local notif = CFCNotifications._testNotification
+            notif:SetText( CFCNotifications._testMessages[math.random( #CFCNotifications._testMessages )] )
+            notif:SetDisplayTime( math.random( 2, 10 ) )
+            notif:Send()
+        end,
+        extra = "Popup a test notification to see how it looks!"
+    },
+    {
+        displayName = "Restore to default",
+        name = "reset",
+        onClick = function()
+            CFCNotifications.resetSettings()
+        end,
+        type = "action",
+        extra = "Revert all settings to their defaults"
+    },
+    {
+        displayName = "Reload addon",
+        name = "reload",
+        onClick = function()
+            CFCNotifications.reload()
+        end,
+        type = "action",
+        extra = "This is required upon settings change",
+        editMenuItem = function( c )
+            function c:Think()
+                self:SetTextColor( CFCNotifications._cacheInvalid and Color( 255, 0, 0 ) or Color( 0, 0, 0 ) )
+            end
+        end
     }
 }
 
@@ -87,6 +145,13 @@ local typeGetters = {
     string = function( cVar ) return cVar:GetString() end,
 }
 
+local typeSetters = {
+    int = function( cVar, v ) return cVar:SetInt( v ) end,
+    bool = function( cVar, v ) return cVar:SetBool( v ) end,
+    float = function( cVar, v ) return cVar:SetFloat( v ) end,
+    string = function( cVar, v ) return cVar:SetString( v ) end,
+}
+
 function CFCNotifications.getSetting( name )
     if CFCNotifications._settingCache[name] then
         return CFCNotifications._settingCache[name]
@@ -96,7 +161,9 @@ function CFCNotifications.getSetting( name )
     for k, v in pairs( CFCNotifications._settingsTemplate ) do
         if v.name == name then
             local val = typeGetters[v.type]( cVar )
-            CFCNotifications._settingCache[name] = val
+            if not v.noCache then
+                CFCNotifications._settingCache[name] = val
+            end
             return val
         end
     end
@@ -104,6 +171,18 @@ end
 
 function CFCNotifications.clearSettingsCache()
     CFCNotifications._settingCache = {}
+end
+
+function CFCNotifications.resetSettings()
+    for k, setting in pairs( CFCNotifications._settingsTemplate ) do
+        if setting.type ~= "action" then
+            local val = "cfc_notifications_" .. setting.name
+            local cv = GetConVar( val )
+            typeSetters[setting.type]( cv, setting.default )
+        end
+    end
+    print( "Reverted CFCNotifications to default, reloading..." )
+    CFCNotifications.reload()
 end
 
 local typeValidators
@@ -140,7 +219,7 @@ typeValidators = {
         if table.HasValue( tVals, val ) then
             return true, "1"
         elseif table.HasValue( fVals, val ) then
-            return false, "0"
+            return true, "0"
         else
             return false, "Invalid boolean value"
         end
@@ -152,6 +231,22 @@ typeValidators = {
 
 hook.Add( "CFC_Notifications_init", "settings_init", function()
     CFCNotifications.clearSettingsCache()
+    if CFCNotifications.get( "test" ) then
+        CFCNotifications.get( "test" ):Remove()
+    end
+    -- displays a normal test notification that shows for 5 seconds
+    local notif = CFCNotifications.new( "test", "Text" )
+    notif:SetIgnoreable( false )
+    
+    --notif:SetText( "Are you sure you want to burn all life on this planet?" )
+    --notif:SetIgnoreable( false )
+    --notif:SetTitle( "A real question" )
+
+    --notif:AddButton( "Sure, why not", Color( 0, 255, 0 ), false )
+    --notif:AddButton( "Maybe later?", Color( 255, 0, 0 ), false )
+    --notif:AddButton( "A third option?", Color( 0, 0, 255 ), false )
+
+    CFCNotifications._testNotification = notif
 end )
 
 hook.Add( "Initialize", "cfc_notifications_init", function()
@@ -162,16 +257,24 @@ hook.Add( "Initialize", "cfc_notifications_init", function()
         elseif not ConVarExists( val ) then
             local def = setting.default
             local t = setting.type
-            if type( def ) == "boolean" then def = def and 1 or 0 end
+            if type( def ) == "bool" then def = def and 1 or 0 end
             CreateClientConVar(val, tostring(def))
             cvars.AddChangeCallback( val, function( cvarName, old, new )
                 local cvar = GetConVar( cvarName )
                 if old == new then return end
+
+                -- Form:NumSlider auto changes values by removing trailing 0's, aka 0.60000 -> 0.60, this triggers a nocache
+                -- technically not a change, so lets ignore it
+                if t == "float" and tonumber( old ) == tonumber( new ) then return end
+
                 local validator = typeValidators[t]
                 local success, validVal = validator( setting, new )
                 if success then
                     if validVal ~= new then
                         cvar:SetString( validVal )
+                    end
+                    if not setting.noCache then
+                        CFCNotifications._cacheInvalid = true
                     end
                 else
                     print( "Error: " .. validVal )
@@ -180,33 +283,99 @@ hook.Add( "Initialize", "cfc_notifications_init", function()
             end )
         end
     end
+    CFCNotifications.loadIgnores()
     -- Let everything else run after settings are ready
+    if CFCNotifications.MenuOptions then
+        CFCNotifications._updateMenuOptions( CFCNotifications.MenuOptions )
+    end
     hook.Run( "CFC_Notifications_init" )
 end )
 
-hook.Add( "PopulateToolMenu", "CFCNotifications_settings", function()
-    spawnmenu.AddToolMenuOption( "Options", "CFC", "cfc_notifications", "Notifications", "", "", function( panel )
-        panel:ClearControls()
-        for k, setting in pairs( CFCNotifications._settingsTemplate ) do
-            if not setting.noMenu then
-                local val = "cfc_notifications_" .. setting.name
-                local c
-                if setting.type == "bool" then
-                    c = panel:CheckBox( setting.displayName, val )
-                elseif setting.type == "action" then
-                    c = panel:Button( setting.displayName, val )
-                elseif setting.type == "int" then
-                    c = panel:NumSlider( setting.displayName, val, setting.min or 0, setting.max or 100, 0 )
-                elseif setting.type == "float" then
-                    c = panel:NumSlider( setting.displayName, val, setting.min or 0, setting.max or 100, 2 )
-                elseif setting.type == "string" then
-                    c = panel:TextEntry( setting.displayName, val )
-                end
+local function addSettingsOptions()
+    local panel = CFCNotifications.addOptionsCategory( "Settings" )
+    panel:SetExpanded( true )
+    panel:Help( "Some settings require you to reload the addon for them to take effect." )
+    panel:Help( "The reload button will turn red if it is required" )
+    for k, setting in pairs( CFCNotifications._settingsTemplate ) do
+        if not setting.noMenu then
+            local val = "cfc_notifications_" .. setting.name
+            local c
+            if setting.type == "bool" then
+                c = panel:CheckBox( setting.displayName, val )
+            elseif setting.type == "action" then
+                c = panel:Button( setting.displayName, val )
+            elseif setting.type == "int" then
+                c = panel:NumSlider( setting.displayName, val, setting.min or 0, setting.max or 100, 0 )
+            elseif setting.type == "float" then
+                c = panel:NumSlider( setting.displayName, val, setting.min or 0, setting.max or 100, 2 )
+            elseif setting.type == "string" then
+                c = panel:TextEntry( setting.displayName, val )
+            end
 
-                if setting.info then
-                    c:SetTooltip( setting.info )
-                end
+            if setting.editMenuItem then
+                setting.editMenuItem( c )
+            end
+
+            if setting.info then
+                c:SetTooltip( setting.info )
             end
         end
+    end
+    panel:Help( "" ) -- Bit of spacing at the end
+end
+
+function CFCNotifications._updateMenuOptions( panel )
+    CFCNotifications.MenuOptions = panel
+    panel:SetSize( 100, 400 )
+    panel:Clear( true )
+
+    panel.contents = panel.contents or vgui.Create( "DListLayout" )
+    panel.contents:Clear()
+
+    panel:SetContents( panel.contents )
+    panel:Dock( FILL )
+
+    addSettingsOptions()
+    hook.Run( "CFC_Notifications_tool_menu" )
+end
+
+local function addListViewFunc( panel )
+    function panel:ListView( strLabel )
+        local listView = vgui.Create( "DListView", self )
+        listView:AddColumn( strLabel )
+        listView.AddItem = listView.AddLine
+        listView.Stretch = true
+
+        self:AddItem( listView )
+
+        return listView
+    end
+end
+
+function CFCNotifications.addOptionsCategory( name )
+    local cat = CFCNotifications.MenuOptions.contents:Add( "DForm" )
+    cat:SetLabel( name )
+    cat:SetExpanded( false )
+
+    cat.oldToggle = cat.Toggle
+    function cat:Toggle()
+        local isExpanded = self:GetExpanded()
+        if isExpanded then return end -- Can't have none open
+        self:oldToggle()
+        for k, v in pairs( CFCNotifications.MenuOptions.contents:GetChildren() ) do
+            if v ~= self and v:GetExpanded() then
+                v:oldToggle()
+            end
+        end
+    end
+
+    addListViewFunc( cat )
+
+    return cat
+end
+
+hook.Add( "PopulateToolMenu", "CFCNotifications_settings", function()
+    spawnmenu.AddToolMenuOption( "Options", "CFC", "cfc_notifications", "Notifications", "", "", function( panel )
+        CFCNotifications._updateMenuOptions( panel )
     end )
 end )
