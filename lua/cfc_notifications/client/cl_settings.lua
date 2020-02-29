@@ -233,15 +233,22 @@ hook.Add( "CFC_Notifications_init", "settings_init", function()
     CFCNotifications.clearSettingsCache()
     -- displays a normal test notification that shows for 5 seconds
     local notif = CFCNotifications.new( "test", "Text", true )
+    -- notif:SetPriority( 3 )
 
     -- Code for button test
-    --notif:SetText( "Are you sure you want to burn all life on this planet?" )
-    --notif:SetIgnoreable( false )
-    --notif:SetTitle( "A real question" )
-    --notif:AddButton( "Sure, why not", Color( 0, 255, 0 ), false )
-    --notif:AddButton( "Maybe later?", Color( 255, 0, 0 ), false )
-    --notif:AddButton( "A third option?", Color( 0, 0, 255 ), false )
-
+    --[[
+    local notif = CFCNotifications.new( "test", "Buttons", true )
+    notif:SetText( "Are you sure you want to burn all life on this planet?" )
+    notif:SetIgnoreable( false )
+    notif:SetTitle( "A real question" )
+    notif:AddButton( "Sure, why not", Color( 0, 255, 0 ), true )
+    notif:AddButton( "Maybe later?", Color( 255, 0, 0 ), false )
+    notif:AddButton( "A third option?", Color( 0, 0, 255 ), "?" )
+    function notif:OnButtonPressed( ... )
+        print( ... )
+    end
+    notif:Send()
+    ]]
     CFCNotifications._testNotification = notif
 end )
 

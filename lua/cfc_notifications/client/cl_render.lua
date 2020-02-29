@@ -3,6 +3,11 @@ CFCNotifications._popupIDCounter = 0
 CFCNotifications._animationSpeed = 5000
 local notifSpacing = 5
 
+local priorityColors = {
+    [CFCNotifications.PRIORITY_HIGH] = Color( 255, 140, 0, 150 ),
+    [CFCNotifications.PRIORITY_MAX] = Color( 255, 20, 20, 150 ),
+}
+
 surface.CreateFont( "CFC_Notifications_Title", {
     font = "Roboto",
     size = 17,
@@ -289,6 +294,7 @@ function CFCNotifications._addNewPopup( notif )
     end
     local canClose = notif:GetCloseable()
     local canIgnore = notif:GetIgnoreable()
+    local priority = notif:GetPriority()
 
     local pWidth = CFCNotifications.getSetting( "size_x" )
     local pHeight = CFCNotifications.getSetting( "size_y" )
@@ -302,6 +308,9 @@ function CFCNotifications._addNewPopup( notif )
     end
     panel:SetTitle( notif:GetTitle() )
     panel:SetAlwaysTiming( notif:GetAlwaysTiming() )
+    if priorityColors[priority] then
+        panel:SetTitleBarColor( priorityColors[priority] )
+    end
     panel:Populate()
     panel:InvalidateLayout( true )
 
@@ -358,7 +367,6 @@ function CFCNotifications._addNewPopup( notif )
     notif:_callHook( id, "OnOpen", id )
 
     if CFCNotifications.getSetting( "allow_sound" ) then
-        local priority = notif:GetPriority()
         local min_priority = CFCNotifications.getSetting( "min_priority_sound" )
         if priority >= min_priority then
             surface.PlaySound( "garrysmod/balloon_pop_cute.wav" )

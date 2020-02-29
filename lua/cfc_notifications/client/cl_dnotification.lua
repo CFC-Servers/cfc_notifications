@@ -29,6 +29,7 @@ CFCNotifications.contextHelpers.addField( PANEL, "ignoreable", true, "boolean" )
 CFCNotifications.contextHelpers.addField( PANEL, "closeable", true, "boolean" )
 CFCNotifications.contextHelpers.addField( PANEL, "buttonsDisabled", false, "boolean" )
 CFCNotifications.contextHelpers.addField( PANEL, "alwaysTiming", false, "boolean" )
+CFCNotifications.contextHelpers.addField( PANEL, "titleBarColor", Color( 140, 140, 140, 150 ), "Color" )
 
 function PANEL:GetCanvas()
     return self._canvas
@@ -114,7 +115,7 @@ function PANEL:_makeTitleBar()
     local bar = vgui.Create( "DPanel", self )
     bar:SetSize( self:GetWide(), 20 )
     bar:Dock( TOP )
-    bar:SetBackgroundColor( Color( 140, 140, 140, 150 ) )
+    bar:SetBackgroundColor( self:GetTitleBarColor() )
     bar.Paint = solidColorPaint
 
     local title = vgui.Create( "DLabel", bar )
