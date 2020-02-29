@@ -237,7 +237,7 @@ hook.Add( "CFC_Notifications_init", "settings_init", function()
     -- displays a normal test notification that shows for 5 seconds
     local notif = CFCNotifications.new( "test", "Text" )
     notif:SetIgnoreable( false )
-    
+
     --notif:SetText( "Are you sure you want to burn all life on this planet?" )
     --notif:SetIgnoreable( false )
     --notif:SetTitle( "A real question" )

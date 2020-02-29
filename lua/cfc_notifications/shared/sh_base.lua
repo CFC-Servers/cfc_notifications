@@ -29,7 +29,7 @@ else
     include( "cfc_notifications/client/cl_save.lua" )
     include( "cfc_notifications/client/cl_settings.lua" )
 
-    hook.Add( "InitPostEntity", "CFCNotifications_request_data", function() 
+    hook.Add( "InitPostEntity", "CFCNotifications_request_data", function()
         -- Acting as a way of saying "I'm ready"
         net.Start( "CFC_NotificationExists" )
         net.SendToServer()
