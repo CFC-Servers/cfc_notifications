@@ -138,7 +138,7 @@ local addField = function( ... ) CFCNotifications.contextHelpers.addField( CONTE
 
 addField( "displayTime", 5, "number" )
 addField( "timed", true, "boolean" )
-addField( "priority", CFCNotifications.PRIORITY_NORMAL, "number" )
+addField( "priority", CFCNotifications.PRIORITY_LOW, "number" )
 addField( "allowMultiple", false, "boolean" )
 addField( "title", "Notification", "string" )
 addField( "alwaysTiming", false, "boolean" )

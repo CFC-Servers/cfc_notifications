@@ -21,7 +21,7 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
 
     CONTEXT._timed = false
     -- These require player input, so are more important than other notifications
-    CONTEXT._priority = CFCNotifications.PRIORITY_HIGH
+    CONTEXT._priority = CFCNotifications.PRIORITY_NORMAL
 
     function CONTEXT:_addDefaultButtons()
         self:AddButton( "Yes", Color( 0, 255, 0 ), true )
@@ -76,9 +76,10 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
                 end )
 
                 this:_callHook( popupID, "OnButtonPressed", unpack( btnData.data or { btnData.text } ) )
+                -- this:_callHook( popupID, "OnClose", popupID, false )
             end
             btn:SetSize( btnW - 20, 30 )
-            btn:SetPos( 10 + ( k - 1 ) * btnW, h * 0.75 - 15 )
+            btn:SetPos( 10 + ( k - 1 ) * btnW, h - 40 )
             table.insert( btns, btn )
         end
     end
