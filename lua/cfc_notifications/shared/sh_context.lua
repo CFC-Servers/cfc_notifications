@@ -163,6 +163,7 @@ addField( "ignoreable", true, "boolean", ignoreableChanged )
 
 -- Empty implementations to be overwritten in registerType
 function CONTEXT:PopulatePanel( panel ) end
+function CONTEXT:OnAltNum( key ) end
 -- End
 
 function CONTEXT:_callHook( popupID, hookName, ... )
