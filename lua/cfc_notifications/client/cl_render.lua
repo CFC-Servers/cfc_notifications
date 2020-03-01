@@ -35,22 +35,48 @@ surface.CreateFont( "CFC_Notifications_Mono", {
 local clickerEnabled = false
 local lastClick = 0
 
-hook.Add( "PlayerButtonDown", "f3_free_cursor", function( ply, key )
-    if ply ~= LocalPlayer() then return end
-    if key ~= KEY_F3 then return end
+local bindTranslation = {}
+bindTranslation["slot1"] = 1
+bindTranslation["slot2"] = 2
+bindTranslation["slot3"] = 3
+bindTranslation["slot4"] = 4
+bindTranslation["slot5"] = 5
+bindTranslation["slot6"] = 6
+bindTranslation["slot7"] = 7
+bindTranslation["slot8"] = 8
+bindTranslation["slot9"] = 9
+bindTranslation["slot0"] = 0
 
+hook.Add( "PlayerButtonDown", "CFCNotifications_render_keydown", function( ply, key )
+    if ply ~= LocalPlayer() then return end
     -- PlayerButtonDown is called multiple times because gmod is bad
     local ct = SysTime()
     if ct - lastClick < 0.2 then return end
     lastClick = ct
 
-    clickerEnabled = not clickerEnabled
-    local adjustCursor = CFCNotifications.getSetting( "adjust_cursor" )
-    local wide = CFCNotifications.getSetting( "size_x" )
-    if adjustCursor and clickerEnabled then
-        gui.SetMousePos( ScrW() - wide - 50, ScrH() / 2 )
+    if key == KEY_F3 then
+        clickerEnabled = not clickerEnabled
+        local adjustCursor = CFCNotifications.getSetting( "adjust_cursor" )
+        local wide = CFCNotifications.getSetting( "size_x" )
+        if adjustCursor and clickerEnabled then
+            gui.SetMousePos( ScrW() - wide - 50, ScrH() / 2 )
+        end
+        gui.EnableScreenClicker( clickerEnabled )
+    elseif input.IsButtonDown( KEY_LALT ) and key == KEY_R then
+        if #CFCNotifications._popups == 0 then return end
+        local popup = CFCNotifications._popups[1]
+        popup.panel:OnClose()
     end
-    gui.EnableScreenClicker( clickerEnabled )
+end )
+
+hook.Add( "PlayerBindPress", "CFCNotifcations_render_numdown", function( _, bind )
+    local v = bindTranslation[bind]
+    if not v then return end
+    if #CFCNotifications._popups == 0 then return end
+    local notif = CFCNotifications._popups[1].notification
+    if notif.OnAltNum then
+        return notif:OnAltNum( v )
+    end
 end )
 
 local function solidColorPaint( col )

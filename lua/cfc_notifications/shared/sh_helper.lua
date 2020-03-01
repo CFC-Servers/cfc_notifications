@@ -54,12 +54,10 @@ if SERVER then
 			if #winners == 0 then
 				CFCNotifications.sendSimple( id, "Vote results ( " .. voteCount .. " / " .. plyTotal .. " voted )",
 					"No-one voted! There is no winner." )
-			elseif #winners == 1 then
-				CFCNotifications.sendSimple( id, "Vote results ( " .. voteCount .. " / " .. plyTotal .. " voted )",
-					"Option \"" .. winners[1] .. "\" won with " .. maxVote .. " vote" .. plural( maxVote ) .. "." )
 			else
 				CFCNotifications.sendSimple( id, "Vote results ( " .. voteCount .. " / " .. plyTotal .. " voted )",
-					"Options \"" .. table.concat( winners, ", " ) .. "\" won with " .. maxVote .. " vote" .. plural( maxVote ) .. "." )
+					"Option" .. plural( #winners ) .. " \"" .. table.concat( winners, "\", \"" ) .. 
+					"\" won with " .. maxVote .. " vote" .. plural( maxVote ) .. "." )
 			end
 
 			if cb then

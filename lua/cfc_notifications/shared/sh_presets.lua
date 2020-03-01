@@ -38,6 +38,15 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
         } )
     end
 
+    function CONTEXT:OnAltNum( key )
+        if key < 1 or key > 9 then return end
+        if self._btns[key] then
+            self._btns[key]:DoClickInternal()
+            self._btns[key]:DoClick()
+            return true
+        end
+    end
+
     function CONTEXT:PopulatePanel( canvas, popupID, panel )
         local label = Label( self:GetText(), canvas )
         label:SetFont( "CFC_Notifications_Big" )
@@ -73,14 +82,14 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
                 -- Delay the close to see the button animation, make it clear that the button is what was selected
                 timer.Simple( 0.5, function()
                     CFCNotifications._removePopup( panel )
+                    this:_callHook( popupID, "OnButtonPressed", unpack( btnData.data or { btnData.text } ) )
                 end )
-
-                this:_callHook( popupID, "OnButtonPressed", unpack( btnData.data or { btnData.text } ) )
-                -- this:_callHook( popupID, "OnClose", popupID, false )
             end
             btn:SetSize( btnW - 20, 30 )
             btn:SetPos( 10 + ( k - 1 ) * btnW, h - 40 )
             table.insert( btns, btn )
         end
+
+        self._btns = btns
     end
 end )
