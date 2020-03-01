@@ -28,7 +28,7 @@ surface.CreateFont( "CFC_Notifications_Normal", {
 
 surface.CreateFont( "CFC_Notifications_Mono", {
     font = "Lucida Console",
-    size = 14,
+    size = 12,
     weight = 500
 } )
 
@@ -219,12 +219,12 @@ local function addNotifHooks( panel, popupID )
         -- Other hooks won't be called with buttons disabled, this still will though, so ignore it.
         if self:GetButtonsDisabled() then return end
 
-        self.data.notification:_callHook( popupID, "OnClose", true )
+        self.data.notification:_callHook( popupID, "OnClose", popupID, true )
         CFCNotifications._removePopup( panel )
     end
 
     function panel:OnClose()
-        self.data.notification:_callHook( popupID, "OnClose", false )
+        self.data.notification:_callHook( popupID, "OnClose", popupID, false )
         CFCNotifications._removePopup( self )
     end
 

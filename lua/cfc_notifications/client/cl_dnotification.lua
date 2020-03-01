@@ -76,7 +76,7 @@ function PANEL:Paint( w, h )
 
     local remaining = math.Clamp( self._maxTime - self._curTime, 0, 100000 )
     local remainingStr = secondsAsTime( math.ceil( remaining ) )
-    draw.DrawText( remainingStr, "CFC_Notifications_Mono", w - 44, h - 20, Color( 180, 180, 180 ) )
+    draw.DrawText( remainingStr, "CFC_Notifications_Mono", w - 44, h - 16, Color( 180, 180, 180 ) )
 end
 
 function PANEL:_makeTitleBarButton( bar, text, cbName, ... )
