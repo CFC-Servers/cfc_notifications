@@ -7,16 +7,16 @@ hook.Add( "Think", "ca_think", function()
     local k = 1
     while k <= #fadePanels do
         local v = fadePanels[k]
-        if not v:IsVisible() then continue end
+        if v:IsVisible() then
+            local lerpVal = math.Clamp( ( sTime - v._ca_timeStart ) / ( v._ca_timeEnd - v._ca_timeStart ), 0, 1 )
+            local newAlpha = Lerp( lerpVal, v._ca_startAlpha, v._ca_endAlpha )
 
-        local lerpVal = math.Clamp( ( sTime - v._ca_timeStart ) / ( v._ca_timeEnd - v._ca_timeStart ), 0, 1 )
-        local newAlpha = Lerp( lerpVal, v._ca_startAlpha, v._ca_endAlpha )
+            v:SetAlpha( newAlpha )
 
-        v:SetAlpha( newAlpha )
-
-        if lerpVal == 1 then
-            table.remove( fadePanels, k )
-            k = k - 1
+            if lerpVal == 1 then
+                table.remove( fadePanels, k )
+                k = k - 1
+            end
         end
         k = k + 1
     end
