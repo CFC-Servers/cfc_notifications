@@ -8,6 +8,8 @@ local priorityColors = {
     [CFCNotifications.PRIORITY_MAX] = Color( 255, 20, 20, 150 ),
 }
 
+include( "cl_customalphato.lua" )
+
 surface.CreateFont( "CFC_Notifications_Title", {
     font = "Roboto",
     size = 17,
@@ -54,10 +56,12 @@ hook.Add( "PlayerButtonDown", "CFCNotifications_render_keydown", function( ply, 
     if ct - lastClick < 0.2 then return end
     lastClick = ct
 
-    if key == KEY_F3 then
+    local x, y = input.GetCursorPos()
+    local wide = CFCNotifications.getSetting( "size_x" )
+
+    if key == KEY_F3 or ( clickerEnabled and key == MOUSE_LEFT and x < ( ScrW() - wide ) ) then
         clickerEnabled = not clickerEnabled
         local adjustCursor = CFCNotifications.getSetting( "adjust_cursor" )
-        local wide = CFCNotifications.getSetting( "size_x" )
         if adjustCursor and clickerEnabled then
             gui.SetMousePos( ScrW() - wide - 50, ScrH() / 2 )
         end
@@ -130,12 +134,12 @@ hook.Add( "CFC_Notifications_init", "render_init", function()
             end
             if not self._prevShow then
                 self._prevShow = true
-                self:AlphaTo( 255, 0.3 )
+                self:CustomAlphaTo( 255, 0.3 )
             end
         else
             if self._prevShow then
                 self._prevShow = false
-                self:AlphaTo( 0, 0.3 )
+                self:CustomAlphaTo( 0, 0.3 )
             end
         end
     end
@@ -182,6 +186,7 @@ local function addNotifHooks( panel, popupID )
         end
         return self._x, self._y
     end
+    panel._targetAlpha = 255
     local oldThink = panel.Think
     function panel:Think()
         oldThink( self )
@@ -232,7 +237,8 @@ local function addNotifHooks( panel, popupID )
                     topPanel._targetX = notifX
                     topPanel._targetY = notifY
                     topPanel:Show()
-                    topPanel:AlphaTo( 255, 0.5 )
+                    topPanel._hidden = false
+                    topPanel:CustomAlphaTo( self._targetAlpha, 0.5 )
                 end
 
                 table.RemoveByValue( CFCNotifications._popups, self.data )
@@ -303,7 +309,7 @@ function CFCNotifications._removePopup( panel )
         end
 
         if leftOpen == 0 then
-            CFCNotifications.freeCursorLabel:AlphaTo( 0, 0.1 )
+            CFCNotifications.freeCursorLabel:CustomAlphaTo( 0, 0.1 )
             clickerEnabled = false
             gui.EnableScreenClicker( clickerEnabled )
         end
@@ -351,7 +357,7 @@ function CFCNotifications._addNewPopup( notif )
     addNotifHooks( panel, id )
 
     if #CFCNotifications._popups == 0 then
-        CFCNotifications.freeCursorLabel:AlphaTo( 255, 0.3 )
+        CFCNotifications.freeCursorLabel:CustomAlphaTo( 255, 0.3 )
     end
 
     local idx = addData( data )
@@ -376,7 +382,8 @@ function CFCNotifications._addNewPopup( notif )
         local topPanelData = CFCNotifications._popups[maxNotif + 1]
         if topPanelData then
             local topPanel = topPanelData.panel
-            topPanel:AlphaTo( 0, 0.5, 0, function()
+            topPanel._hidden = true
+            topPanel:CustomAlphaTo( 0, 0.5, 0, function()
                 topPanel:Hide()
             end )
         end

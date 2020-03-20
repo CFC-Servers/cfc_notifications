@@ -7,6 +7,14 @@ function CFCNotifications.sendSimple( id, title, message, filter )
     notif:Send( filter )
 end
 
+function CFCNotifications.sendHint( id, title, message, filter )
+    local notif = CFCNotifications.new( id, "TextAcknowledge", true )
+    notif:SetText( message )
+    notif:SetTitle( title )
+    notif:SetCloseable( true )
+    notif:Send( filter )
+end
+
 function CFCNotifications.sendImportantSimple( id, title, message, filter )
     local notif = CFCNotifications.new( id, "Text", true )
     notif:SetText( message )

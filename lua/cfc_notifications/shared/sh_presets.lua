@@ -93,3 +93,47 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
         self._btns = btns
     end
 end )
+
+CFCNotifications.registerNotificationType( "TextAcknowledge", function( CONTEXT )
+    local oldPopulate = CONTEXT.PopulatePanel
+    function CONTEXT:OnButtonPressed_Client( ignore )
+        if ignore then
+            self:Ignore( true )
+        end
+    end
+    CONTEXT._priority = CFCNotifications.PRIORITY_LOW
+
+    CONTEXT:AddButton( "Okay!", Color( 0, 255, 0 ), false )
+    CONTEXT:AddButton( "Never show again", Color( 255, 255, 255 ), true )
+    function CONTEXT:PopulatePanel( canvas, popupID, panel )
+        panel._unhoverTime = SysTime() + 1
+        local oldThink = panel.Think
+        function panel:Think()
+            local x, y = self:LocalCursorPos()
+            local w, h = self:GetSize()
+            self._hovered = not ( x < 0 or x > w or y < 0 or y > h )
+            if self._hovered ~= self._lastHovered then
+                if self._hovered then
+                    self._targetAlpha = 255
+                    if not self._hidden then
+                        self:CustomAlphaTo( self._targetAlpha, 0.1 )
+                    end
+                else
+                    self._unhoverTime = SysTime()
+                end
+            end
+            if not self._hovered and self._unhoverTime and SysTime() - self._unhoverTime > 1 then
+                self._unhoverTime = nil
+                self._targetAlpha = 100
+                if not self._hidden then
+                    self:CustomAlphaTo( self._targetAlpha, 0.5 )
+                end
+            end
+            panel._lastHovered = panel._hovered
+
+            oldThink( self )
+        end
+
+        oldPopulate( self, canvas, popupID, panel )
+    end
+end, "Buttons" )

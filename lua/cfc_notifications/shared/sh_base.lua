@@ -36,10 +36,19 @@ else
     end )
 end
 
-function CFCNotifications.registerNotificationType( notificationType, callback )
-    local CONTEXT = table.Copy( CFCNotifications.Base )
-    callback( CONTEXT )
-    CFCNotifications.Types[notificationType] = CONTEXT
+function CFCNotifications.registerNotificationType( notificationType, callback, inherit )
+    local CONTEXT
+    if inherit then
+        CONTEXT = CFCNotifications.Types[inherit]
+        if not CONTEXT then
+            error( "Unknown inherited notification type " .. inherit )
+        end
+    else
+        CONTEXT = CFCNotifications.Base
+    end
+    local NEW_CONTEXT = table.Copy( CONTEXT )
+    callback( NEW_CONTEXT )
+    CFCNotifications.Types[notificationType] = NEW_CONTEXT
 end
 
 include( "sh_presets.lua" )
