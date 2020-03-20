@@ -75,7 +75,7 @@ if SERVER then
                     end
                     cb( winners[1] )
                 else
-                    cb()
+                    cb( winners )
                 end
             end
         end
