@@ -56,7 +56,7 @@ hook.Add( "PlayerButtonDown", "CFCNotifications_render_keydown", function( ply, 
     if ct - lastClick < 0.2 then return end
     lastClick = ct
 
-    local x, y = input.GetCursorPos()
+    local x, _ = input.GetCursorPos()
     local wide = CFCNotifications.getSetting( "size_x" )
 
     if key == KEY_F3 or ( clickerEnabled and key == MOUSE_LEFT and x < ( ScrW() - wide ) ) then
