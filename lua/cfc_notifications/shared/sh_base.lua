@@ -126,6 +126,7 @@ function CFCNotifications._resolveFilter( filter )
     if type( players ) == "Player" then
         players = { players }
     end
+    if not players then players = player.GetAll() end
     return players
 end
 
