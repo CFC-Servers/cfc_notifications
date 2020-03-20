@@ -144,13 +144,13 @@ addField( "title", "Notification", "string" )
 addField( "alwaysTiming", false, "boolean" )
 addField( "callingPopupID", -1, "number" )
 
-local function ignoreableChanged( self )
+local function ignoreableChanged( self, ignoreable )
     if SERVER then
         -- Delay as often called directly after new, which sends a message
         timer.Simple( 0.1, function()
             net.Start( "CFC_NotificationExists" )
             net.WriteString( self:GetID() )
-            net.WriteBool( self:GetIgnoreable() and self:GetCloseable() )
+            net.WriteBool( ignoreable and self:GetCloseable() )
             net.Broadcast()
         end )
     end
@@ -179,6 +179,10 @@ function CONTEXT:_callHook( popupID, hookName, ... )
             self:SetCallingPopupID( popupID )
             self[hookName]( self, ... )
         end
+    end
+    if self[hookName .. "_Client"] then
+        self:SetCallingPopupID( popupID )
+        self[hookName .. "_Client"]( self, ... )
     end
 end
 
