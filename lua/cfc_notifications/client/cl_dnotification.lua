@@ -36,20 +36,20 @@ function PANEL:GetCanvas()
 end
 
 function PANEL:Think()
-    local ct = SysTime()
-    local pt = self._prevThinkTime or 0
-    local dt = ct - pt
-    self._prevThinkTime = ct
-    if dt > 0.5 then
+    local currentTime = SysTime()
+    local previousTime = self._prevThinkTime or 0
+    local deltaTime = currentTime - previousTime
+    self._prevThinkTime = currentTime
+    if deltaTime > 0.5 then
         -- Too much time passed between paint, probably wasn't visible
-        dt = 0
+        deltaTime = 0
     end
-    self._thinkDeltaTime = dt
+    self._thinkDeltaTime = deltaTime
 
     -- Incrementing time here so the timer doesn't decrement when the notification isnt visible ( aka, when there's a lot of notifications at once )
     if not self._showTimer then return end
     if self:GetAlwaysTiming() or self:IsVisible() then
-        self._curTime = self._curTime + dt
+        self._curTime = self._curTime + deltaTime
     end
 
     if self._curTime > self._maxTime then
@@ -61,22 +61,30 @@ function PANEL:Think()
             end
         end
     end
+
+    local remaining = math.ceil( math.Clamp( self._maxTime - self._curTime, 0, 100000 ) )
+    local previousRemaining = self._prevRemaining or 0
+    self._prevRemaining = remaining
+
+    if remaining ~= previousRemaining then
+        self._remainingStr = secondsAsTime( remaining )
+    end
+
+    self._timerFraction = self._curTime / self._maxTime
 end
 
 function PANEL:Paint( w, h )
     solidColorPaint( self, w, h )
     if not self._showTimer then return end
 
-    local frac = self._curTime / self._maxTime
+    local frac = self._timerFraction
     local barHeight = 4
     surface.SetDrawColor( Color( 180, 180, 180, 150 ) )
-    surface.DrawRect( 0, h-barHeight, w, barHeight )
+    surface.DrawRect( 0, h - barHeight, w, barHeight )
     surface.SetDrawColor( Color( 240, 40, 40 ) )
-    surface.DrawRect( 0, h-barHeight, w * frac, barHeight )
+    surface.DrawRect( 0, h - barHeight, w * frac, barHeight )
 
-    local remaining = math.Clamp( self._maxTime - self._curTime, 0, 100000 )
-    local remainingStr = secondsAsTime( math.ceil( remaining ) )
-    draw.DrawText( remainingStr, "CFC_Notifications_Mono", w - 44, h - 16, Color( 180, 180, 180 ) )
+    draw.DrawText( self._remainingStr, "CFC_Notifications_Mono", w - 44, h - 16, Color( 180, 180, 180 ) )
 end
 
 function PANEL:_makeTitleBarButton( bar, text, cbName, ... )
@@ -96,7 +104,11 @@ function PANEL:_makeTitleBarButton( bar, text, cbName, ... )
     function btn:Think()
         local x, y = self:LocalCursorPos()
         local w, h = self:GetSize()
-        local isHovered = x >= 0 and x <= w and y >= 0 and y <= h -- Not using panel:IsHovered as that often gets it wrong due to using vgui.GetHoveredPanel()
+
+        -- Using this over panel:IsHovered(), as IsHovered simply checks the result of vgui.GetHoveredPanel()
+        -- GetHoveredPanel only returns the inner most hovered element, so IsHovered returns false if an element within it is hovered.
+        -- Solution: Base hover purely on size and mouse position
+        local isHovered = x >= 0 and x <= w and y >= 0 and y <= h
         if isHovered ~= self.wasHovered then
             if isHovered then
                 self:SetTextColor( Color( 255, 255, 255 ) )
@@ -137,6 +149,8 @@ function PANEL:_makeTitleBar()
 
     local offset = 2
     local barWidth = self:GetWide()
+    local splitBarWidth = 5
+    local splitBarOffset = 4
     for k = 1, #btnTexts do
         local textData = btnTexts[k]
         local text = table.remove( textData, 1 )
@@ -151,8 +165,8 @@ function PANEL:_makeTitleBar()
             splitBar:SetText( "|" )
             splitBar:SetTextColor( Color( 200, 200, 200 ) )
             splitBar:SizeToChildren()
-            splitBar:SetPos( barWidth - ( offset + 4 ), 0 )
-            offset = offset + 5
+            splitBar:SetPos( barWidth - ( offset + splitBarOffset ), 0 )
+            offset = offset + splitBarWidth
         end
     end
 

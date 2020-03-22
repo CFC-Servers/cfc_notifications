@@ -4,17 +4,18 @@ CFCNotifications.contextHelpers = {}
 function CFCNotifications._getTimerName()
     local newName = "notification-timer-" .. tostring( CFCNotifications._timerNameCount )
 
-    CFCNotifications._timerNameCount = CFCNotifications._timerNameCount + 1 -- How I yearn for the ++ operator
+    CFCNotifications._timerNameCount = CFCNotifications._timerNameCount + 1
 
     return newName
 end
 
-local function checkTypes( tab, t )
+local function containsType( tab, t )
     for k, v in pairs( tab ) do
         if type( v ) ~= t then
             return false
         end
     end
+
     return true
 end
 
@@ -34,6 +35,7 @@ function CONTEXT:Remove()
         self:RemovePopups()
         CFCNotifications._reloadIgnoredPanels()
     end
+
     CFCNotifications.Notifications[self:GetID()] = nil
 end
 
@@ -56,7 +58,7 @@ end
 function CONTEXT:Send( filter )
     if SERVER then
         local players = CFCNotifications._resolveFilter( filter )
-        local valid = checkTypes( players, "Player" )
+        local valid = containsType( players, "Player" )
         if not valid then
             return -- or maybe error?
         end
@@ -71,7 +73,7 @@ function CONTEXT:Send( filter )
         if self:GetCloseable() and not self:ShouldShowNotification() then
             return
         end
-        -- Call something in render.lua to make a panel for this notif
+
         return CFCNotifications._addNewPopup( self )
     end
 end
@@ -84,9 +86,11 @@ function CONTEXT:SendRepeated( delay, reps, filter )
     if self._timerName then
         error( "Timer already running" )
     end
+
     self._timerName = CFCNotifications._getTimerName()
     timer.Create( self._timerName, delay, reps, function()
         self:Send( filter )
+
         if timer.RepsLeft( self._timerName ) == 0 then
             self._timerName = nil
         end
@@ -116,21 +120,32 @@ end
 
 -- Add a field ( Getter, Setter and default value ) to context. "name" in camelCase
 function CFCNotifications.contextHelpers.addField( context, name, default, argType, onChange )
+    -- _internalName (underscore .. camelCase
     local internalName = "_" .. name
+    -- ExternalName (UpperCamelCase)
     local externalName = string.upper( name[1] ) .. string.sub( name, 2 )
+    local setterName = "Set" .. externalName
+    local getterName = "Get" .. externalName
+
     context[internalName] = default
-    context["Set" .. externalName] = function( self, v )
+
+    context[setterName] = function( self, v )
+        -- Type checking
         if argType == "Color" then
+            -- Color objects are actually just tables, so use IsColor() to check them
             if not IsColor( v ) then
                 error( "Unexpected type in Set" .. externalName .. ", expected " .. argType .. ", got " .. type( v ) )
             end
         elseif type( v ) ~= argType then
             error( "Unexpected type in Set" .. externalName .. ", expected " .. argType .. ", got " .. type( v ) )
         end
+        -- Set value
         self[internalName] = v
+        -- Call onChange
         if onChange then onChange( self, v ) end
     end
-    context["Get" .. externalName] = function( self )
+
+    context[getterName] = function( self )
         return self[internalName]
     end
 end

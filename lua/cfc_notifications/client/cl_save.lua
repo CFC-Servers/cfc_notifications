@@ -19,6 +19,7 @@ function CFCNotifications.Base:Ignore( permanent )
     else
         CFCNotifications._tempIgnores[id] = true
     end
+
     CFCNotifications._reloadIgnoredPanels()
 end
 
@@ -30,6 +31,7 @@ function CFCNotifications.Base:Unignore()
         CFCNotifications._permIgnores[id] = nil
         CFCNotifications.saveIgnores()
     end
+
     CFCNotifications._reloadIgnoredPanels()
 end
 
@@ -45,6 +47,7 @@ function CFCNotifications.loadIgnores()
     for k = 1, #data do
         CFCNotifications._permIgnores[data[k]] = true
     end
+
     CFCNotifications._reloadIgnoredPanels()
 end
 
@@ -58,16 +61,19 @@ end
 
 function CFCNotifications.getUnignored()
     local out = {}
+
     for k, v in pairs( CFCNotifications.Notifications ) do
         if not CFCNotifications._tempIgnores[k] and not CFCNotifications._permIgnores[k] and v:GetCloseable() and v:GetIgnoreable() then
             table.insert( out, k )
         end
     end
+
     for k, v in pairs( CFCNotifications._serverNotificationIDs ) do
         if not CFCNotifications._tempIgnores[v] and not CFCNotifications._permIgnores[v] and not table.HasValue( out, v ) then
             table.insert( out, v )
         end
     end
+
     return out
 end
 
@@ -75,15 +81,21 @@ local panels = {}
 
 function CFCNotifications._reloadIgnoredPanels()
     if #panels == 0 then return end
+
     panels[1]:Clear()
+
     for k, v in ipairs( CFCNotifications.getTempIgnored() ) do
         panels[1]:AddItem( v )
     end
+
     panels[2]:Clear()
+
     for k, v in ipairs( CFCNotifications.getPermIgnored() ) do
         panels[2]:AddItem( v )
     end
+
     panels[3]:Clear()
+
     for k, v in ipairs( CFCNotifications.getUnignored() ) do
         panels[3]:AddItem( v )
     end
@@ -99,19 +111,26 @@ local function addList( panel, name, onLeft, onRight )
     function list:OnRowSelected( idx, row )
         timer.Simple( 0, function()
             if not row:IsValid() then return end
+
             self:ClearSelection()
+
             local id = row:GetColumnText( 1 )
+
             self:RemoveLine( idx )
             onLeft( id )
+
             CFCNotifications._reloadIgnoredPanels()
         end )
     end
 
     function list:OnRowRightClick( idx, row )
         self:ClearSelection()
+
         local id = row:GetColumnText( 1 )
+
         self:RemoveLine( idx )
         onRight( id )
+        
         CFCNotifications._reloadIgnoredPanels()
     end
 
