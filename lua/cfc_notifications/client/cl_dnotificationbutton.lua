@@ -73,7 +73,7 @@ function PANEL:Paint( w, h )
             -- Progress val from 0 - 1 for start of animation ( bar expanding )
             local prog = ( self.clickAnimState - self.clickAnimationLength - 0.2 ) / 0.2
             -- See above for what this means
-            local adjustedProg = adjustprog( prog )
+            local adjustedProg = adjustProg( prog )
             local inverseProg = 1 - adjustedProg
             surface.DrawRect( 0, 0, halfWidth * inverseProg, h - uWeight - 4 )
             surface.DrawRect( halfWidth + halfWidth * adjustedProg, 0, halfWidth * inverseProg, barHeight )
@@ -81,7 +81,7 @@ function PANEL:Paint( w, h )
             -- Progress val from 0 - 1 for end of animation ( bar collapsing )
             local prog = math.Clamp( self.clickAnimState / 0.2, 0, 1 )
             -- Same as previous "adjustedProg"
-            local adjustedProg = adjustprog( prog )
+            local adjustedProg = adjustProg( prog )
             local inverseProg = 1 - adjustedProg
             surface.DrawRect( halfWidth * inverseProg, 0, w * adjustedProg, barHeight )
         end
@@ -93,7 +93,7 @@ function PANEL:Paint( w, h )
 
     -- Hover animation
     -- Adjusted animState (similar to prog) to be sinusoidal
-    local prog = adjustprog( prog )
+    local prog = adjustProg( prog )
     local inverseProg = 1 - prog
 
     -- Underline foreground

@@ -111,7 +111,7 @@ if SERVER then
             if ended then return end
 
             plyCount = plyCount + 1
-            
+
             if plyCount == plyTotal then
                 notif:Remove()
                 timer.Simple( 1, endVote )
