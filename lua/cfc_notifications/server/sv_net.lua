@@ -1,6 +1,5 @@
 local function forceWriteTable( tab )
     for k, v in pairs( tab ) do
-
         local typeID = TypeID( v )
         if typeID == TYPE_TABLE then
             -- Ensure we recurse with this tablewrite, no the original
@@ -8,7 +7,9 @@ local function forceWriteTable( tab )
             net.WriteUInt( typeID, 8 )
             forceWriteTable( v )
         elseif net.WriteVars[TypeID( v )] then
-            -- Just gonna skip over things we can't encode
+            -- net.WriteVars is the table net uses when calling net.WriteType
+            -- Key = TYPEID, Value = Function to write that type
+            -- We're going to check it exists first, so WriteType can't error
             net.WriteType( k )
             net.WriteType( v )
         end
@@ -65,6 +66,7 @@ function CFCNotifications.Base:GetPopupIDs( ply )
     if self._popupIDs and self._popupIDs[ply] then
         return table.GetKeys( self._popupIDs[ply] )
     end
+    
     return {}
 end
 

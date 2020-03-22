@@ -156,14 +156,18 @@ function CFCNotifications.getSetting( name )
     if CFCNotifications._settingCache[name] then
         return CFCNotifications._settingCache[name]
     end
+
     local cVar = GetConVar( "cfc_notifications_" .. name )
     if not cVar then return nil end
+
     for k, v in pairs( CFCNotifications._settingsTemplate ) do
         if v.name == name then
             local val = typeGetters[v.type]( cVar )
+
             if not v.noCache then
                 CFCNotifications._settingCache[name] = val
             end
+
             return val
         end
     end
@@ -178,75 +182,86 @@ function CFCNotifications.resetSettings()
         if setting.type ~= "action" then
             local val = "cfc_notifications_" .. setting.name
             local cv = GetConVar( val )
+
             typeSetters[setting.type]( cv, setting.default )
         end
     end
+
     print( "Reverted CFCNotifications to default, reloading..." )
+
     CFCNotifications.reload()
 end
 
-local typeValidators
-typeValidators = {
-    float = function( data, val )
-        local n = tonumber( val )
-        if n then
-            local range = "( " .. ( data.min or "-inf" ) .. ", " .. ( data.max or "inf" ) .. " )"
-            if data.min and n < data.min then
-                return false, "Value too low, must be in range " .. range
-            end
-            if data.max and n > data.max then
-                return false, "Value too high, must be in range " .. range
-            end
-            return true, val
-        else
-            return false, "Not a number"
+local typeValidators = {}
+function typeValidators.float( data, val )
+    local n = tonumber( val )
+    if n then
+        local range = "( " .. ( data.min or "-inf" ) .. ", " .. ( data.max or "inf" ) .. " )"
+
+        if data.min and n < data.min then
+            return false, "Value too low, must be in range " .. range
         end
-    end,
-    int = function( data, val )
-        local success, err = typeValidators.float( data, val )
-        if not success then return false, err end
-        local n = tonumber( val )
-        if n % 1 == 0 then
-            return true, val
-        else
-            return false, "Not an integer"
+
+        if data.max and n > data.max then
+            return false, "Value too high, must be in range " .. range
         end
-    end,
-    bool = function( data, val )
-        val = string.lower( val )
-        local tVals = {"1", "true", "t"}
-        local fVals = {"0", "false", "f"}
-        if table.HasValue( tVals, val ) then
-            return true, "1"
-        elseif table.HasValue( fVals, val ) then
-            return true, "0"
-        else
-            return false, "Invalid boolean value"
-        end
-    end,
-    string = function( data, val )
+
         return true, val
-    end,
-}
+    else
+        return false, "Not a number"
+    end
+end
+function typeValidators.int( data, val )
+    local success, err = typeValidators.float( data, val )
+    if not success then return false, err end
+
+    local n = tonumber( val )
+    if n % 1 == 0 then
+        return true, val
+    else
+        return false, "Not an integer"
+    end
+end
+function typeValidators.bool( data, val )
+    val = string.lower( val )
+
+    local tVals = {"1", "true", "t"}
+    local fVals = {"0", "false", "f"}
+
+    if table.HasValue( tVals, val ) then
+        return true, "1"
+    elseif table.HasValue( fVals, val ) then
+        return true, "0"
+    else
+        return false, "Invalid boolean value"
+    end
+end
+function typeValidators.string( data, val )
+    return true, val
+end
 
 hook.Add( "CFC_Notifications_init", "settings_init", function()
     CFCNotifications.clearSettingsCache()
     -- displays a normal test notification that shows for 5 seconds
     local notif = CFCNotifications.new( "test", "Text", true )
-    -- notif:SetPriority( 3 )
+
     CFCNotifications._testNotification = notif
 end )
 
 hook.Add( "Initialize", "cfc_notifications_init", function()
     for k, setting in pairs( CFCNotifications._settingsTemplate ) do
         local val = "cfc_notifications_" .. setting.name
+
         if setting.type == "action" then
             concommand.Add( val, setting.onClick )
         elseif not ConVarExists( val ) then
             local def = setting.default
             local t = setting.type
+
             if type( def ) == "bool" then def = def and 1 or 0 end
+
             CreateClientConVar( val, tostring( def ) )
+
             cvars.AddChangeCallback( val, function( cvarName, old, new )
                 local cvar = GetConVar( cvarName )
                 if old == new then return end
@@ -257,6 +272,7 @@ hook.Add( "Initialize", "cfc_notifications_init", function()
 
                 local validator = typeValidators[t]
                 local success, validVal = validator( setting, new )
+
                 if success then
                     if validVal ~= new then
                         cvar:SetString( validVal )
@@ -271,42 +287,54 @@ hook.Add( "Initialize", "cfc_notifications_init", function()
             end )
         end
     end
+
     CFCNotifications.loadIgnores()
+
     -- Let everything else run after settings are ready
     if CFCNotifications.MenuOptions then
         CFCNotifications._updateMenuOptions( CFCNotifications.MenuOptions )
     end
     CFCNotifications._addCustomAlphaTo()
+
     hook.Run( "CFC_Notifications_init" )
 end )
+
+local formInputs = {
+    bool = "CheckBox",
+    action = "Button",
+    int = "NumSlider",
+    float = "NumSlider",
+    string = "TextEntry"
+}
 
 local function addSettingsOptions()
     local panel = CFCNotifications.addOptionsCategory( "Settings" )
     panel:SetExpanded( true )
     panel:Help( "Some settings require you to reload the addon for them to take effect." )
     panel:Help( "The reload button will turn red if it is required" )
+
     for k, setting in pairs( CFCNotifications._settingsTemplate ) do
         if not setting.noMenu then
             local val = "cfc_notifications_" .. setting.name
-            local c
-            if setting.type == "bool" then
-                c = panel:CheckBox( setting.displayName, val )
-            elseif setting.type == "action" then
-                c = panel:Button( setting.displayName, val )
-            elseif setting.type == "int" then
-                c = panel:NumSlider( setting.displayName, val, setting.min or 0, setting.max or 100, 0 )
-            elseif setting.type == "float" then
-                c = panel:NumSlider( setting.displayName, val, setting.min or 0, setting.max or 100, 2 )
-            elseif setting.type == "string" then
-                c = panel:TextEntry( setting.displayName, val )
+            local data = {}
+            if setting.type == "int" or setting.type == "float" then
+                local decimals = setting.type == "int" and 0 or 2
+                data = { setting.min or 0, setting.max or 100, decimals }
             end
 
+            local inputFunc = formInputs[setting.type]
+            if not inputFunc then
+                error( "Invalid input type" )
+            end
+
+            local inputElement = panel[inputFunc]( panel, setting.displayName, val, unpack( data ) )
+
             if setting.editMenuItem then
-                setting.editMenuItem( c )
+                setting.editMenuItem( inputElement )
             end
 
             if setting.info then
-                c:SetTooltip( setting.info )
+                inputElement:SetTooltip( setting.info )
             end
         end
     end

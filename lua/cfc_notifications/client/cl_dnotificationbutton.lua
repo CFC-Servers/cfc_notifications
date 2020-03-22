@@ -2,6 +2,13 @@ local PANEL = {}
 
 local animSpeed = 0.2
 
+-- Adjust by applying sin function to prog, still 0 - 1, but not increases with sin rather than linear
+-- Mathsy thing to change the number to not increase in a boring way
+-- Makes things look prettier
+local function adjustProg( prog )
+    return math.sin( prog * ( math.pi / 2 ) )
+end
+
 function PANEL:Init()
     self.animState = 0
     self.bgCol = Color( 0, 0, 255 )
@@ -14,22 +21,22 @@ end
 
 function PANEL:Think()
     local disabled = self:GetDisabled()
-    local tc = self.textCol
+    local textColor = self.textColor
     if disabled then
         self:SetCursor( "no" )
         self.BaseClass.SetTextColor( self, Color( 100, 100, 100 ) )
     else
         self:SetCursor( "hand" )
-        self.BaseClass.SetTextColor( self, tc )
+        self.BaseClass.SetTextColor( self, textColor )
     end
 
-    local h = self:IsHovered()
+    local hovered = self:IsHovered()
     local time = SysTime()
     self.lastT = self.lastT or time
     local change = time - self.lastT
     self.lastT = time
     if change > 1 then change = 0 end -- If there has been > 1 second since last think, dont do the animation
-    if h or self.clicked then
+    if hovered or self.clicked then
         self.animState = math.Clamp( self.animState + change / animSpeed, 0, 1 )
     else
         self.animState = math.Clamp( self.animState - change / animSpeed, 0, 1 )
@@ -44,42 +51,54 @@ function PANEL:Think()
     end
 end
 
-function PANEL:SetTextColor( tc )
-    self.BaseClass.SetTextColor( self, tc )
-    self.textCol = tc
+function PANEL:SetTextColor( textColor )
+    self.BaseClass.SetTextColor( self, textColor )
+    self.textColor = textColor
 end
 
 function PANEL:Paint( w, h )
     if self:GetDisabled() then return end
 
     local uWeight = self:GetUnderlineWeight()
+    local barHeight = h - uWeight - 4
+    local halfWidth = w / 2
 
     if self.clicked then
-        local col = table.Copy( self.textCol )
+        -- Click animation
+        local col = table.Copy( self.textColor )
         col.a = col.a * 0.1
         surface.SetDrawColor( col )
 
         if self.clickAnimState >= self.clickAnimationLength + 0.2 then
+            -- Progress val from 0 - 1 for start of animation ( bar expanding )
             local prog = ( self.clickAnimState - self.clickAnimationLength - 0.2 ) / 0.2
-            local adjustedProg = math.sin( prog * ( math.pi / 2 ) )
-            surface.DrawRect( 0, 0, w * ( 1 - adjustedProg ) * 0.5, h - uWeight - 4 )
-            surface.DrawRect( w * ( 0.5 + 0.5 * adjustedProg ), 0, w * ( 1 - adjustedProg ) * 0.5, h - uWeight - 4 )
+            -- See above for what this means
+            local adjustedProg = adjustprog( prog )
+            local inverseProg = 1 - adjustedProg
+            surface.DrawRect( 0, 0, halfWidth * inverseProg, h - uWeight - 4 )
+            surface.DrawRect( halfWidth + halfWidth * adjustedProg, 0, halfWidth * inverseProg, barHeight )
         else
+            -- Progress val from 0 - 1 for end of animation ( bar collapsing )
             local prog = math.Clamp( self.clickAnimState / 0.2, 0, 1 )
-            local adjustedProg = math.sin( prog * ( math.pi / 2 ) )
-            surface.DrawRect( w * ( 1 - adjustedProg ) * 0.5, 0, w * adjustedProg, h - uWeight - 4 )
+            -- Same as previous "adjustedProg"
+            local adjustedProg = adjustprog( prog )
+            local inverseProg = 1 - adjustedProg
+            surface.DrawRect( halfWidth * inverseProg, 0, w * adjustedProg, barHeight )
         end
     end
 
-    local s = math.sin( self.animState * ( math.pi / 2 ) )
-
+    -- Underline background
     surface.SetDrawColor( self:GetBackgroundColor() )
-    surface.DrawRect( 0, h - uWeight - 4, w, uWeight )
+    surface.DrawRect( 0, barHeight, w, uWeight )
 
-    surface.SetDrawColor( self.textCol )
-    surface.DrawRect( w * ( 1 - s ) * 0.5, h - uWeight - 4, w * s, uWeight )
+    -- Hover animation
+    -- Adjusted animState (similar to prog) to be sinusoidal
+    local prog = adjustprog( prog )
+    local inverseProg = 1 - prog
 
-
+    -- Underline foreground
+    surface.SetDrawColor( self.textColor )
+    surface.DrawRect( halfWidth * inverseProg, barHeight, w * prog, uWeight )
 end
 
 function PANEL:SetUnderlineWeight( w )

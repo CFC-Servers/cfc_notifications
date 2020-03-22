@@ -27,11 +27,13 @@ end
 if SERVER then
     local function plural( n )
         if n == 1 then return "" end
+
         return "s"
     end
     function CFCNotifications.startVote( id, question, time, options, cb )
         local votes = {}
         local ended = false
+
         local notif = CFCNotifications.new( id, "Buttons", true )
         notif:SetText( question )
         notif:SetAlwaysTiming( true )
@@ -50,6 +52,7 @@ if SERVER then
             ended = true
             local winners = {}
             local maxVote = 0
+
             for k, v in pairs( votes ) do
                 if v > maxVote then
                     winners = { k }
@@ -73,6 +76,7 @@ if SERVER then
                     if not options then
                         winners[1] = winners[1] == "Yes"
                     end
+
                     cb( winners[1] )
                 else
                     cb( winners )
@@ -88,11 +92,15 @@ if SERVER then
 
         function notif:OnButtonPressed( ply, option )
             if ended then return end
+
             if type( option ) == "boolean" then option = option and "Yes" or "No" end
+
             votes[option] = votes[option] or 0
             votes[option] = votes[option] + 1
+
             plyCount = plyCount + 1
             voteCount = voteCount + 1
+
             if plyCount == plyTotal then
                 notif:Remove()
                 timer.Simple( 1, endVote )
@@ -101,7 +109,9 @@ if SERVER then
 
         function notif:OnClose( ply )
             if ended then return end
+
             plyCount = plyCount + 1
+            
             if plyCount == plyTotal then
                 notif:Remove()
                 timer.Simple( 1, endVote )

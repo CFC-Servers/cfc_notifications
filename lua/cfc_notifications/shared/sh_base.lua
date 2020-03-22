@@ -16,6 +16,7 @@ CFCNotifications.PRIORITY_MAX = 5
 -- includes + network strs
 include( "sh_context.lua" )
 include( "sh_helper.lua" )
+
 if SERVER then
     util.AddNetworkString( "CFC_NotificationSend" ) -- send a notification from server
     util.AddNetworkString( "CFC_NotificationEvent" ) -- on notif events, like OnClose
@@ -38,6 +39,7 @@ end
 
 function CFCNotifications.registerNotificationType( notificationType, callback, inherit )
     local CONTEXT
+
     if inherit then
         CONTEXT = CFCNotifications.Types[inherit]
         if not CONTEXT then
@@ -46,6 +48,7 @@ function CFCNotifications.registerNotificationType( notificationType, callback, 
     else
         CONTEXT = CFCNotifications.Base
     end
+
     local NEW_CONTEXT = table.Copy( CONTEXT )
     callback( NEW_CONTEXT )
     CFCNotifications.Types[notificationType] = NEW_CONTEXT
@@ -57,10 +60,13 @@ function CFCNotifications.new( id, notificationType, forceCreate )
     if not id or not notificationType then
         error( "No id or type provided" )
     end
+
     local CONTEXT = CFCNotifications.Types[notificationType]
     if not CONTEXT then
         error( "No such notification type \"" .. notificationType .. "\"" )
     end
+
+    -- Check notification with given id already exists
     if CFCNotifications.Notifications[id] then
         if forceCreate then
             CFCNotifications.Notifications[id]:Remove()
@@ -68,18 +74,24 @@ function CFCNotifications.new( id, notificationType, forceCreate )
             error( "Notification id " .. id .. " already in use. Pass true as third argument to force replace." )
         end
     end
+
     local notif = {}
+    -- Set id and type on notification
     notif._id = id
     notif._type = notificationType
+
+    -- Build and set metatable for notif
     local mt = {}
     mt.__index = CONTEXT
     setmetatable( notif, mt )
 
+    -- Initialize notification
     if notif.Init then
         notif:Init()
     end
 
     CFCNotifications.Notifications[id] = notif
+
     if SERVER then
         if notif:GetIgnoreable() then
             net.Start( "CFC_NotificationExists" )
@@ -90,6 +102,7 @@ function CFCNotifications.new( id, notificationType, forceCreate )
     else
         CFCNotifications._reloadIgnoredPanels()
     end
+
     return notif
 end
 
@@ -118,15 +131,20 @@ function CFCNotifications._resolveFilter( filter )
     if type( filter ) == "Player" then
         filter = { filter }
     end
+
     if type( filter ) == "table" then
         filter = fWrap( filter )
     end
+
     filter = filter or player.GetAll
     local players = filter()
+
     if type( players ) == "Player" then
         players = { players }
     end
+
     if not players then players = player.GetAll() end
+
     return players
 end
 
@@ -139,6 +157,7 @@ function CFCNotifications.reload()
     timer.Simple( 0, function()
         hook.Run( "CFC_Notifications_stop" )
         include( "cfc_notifications/shared/sh_base.lua" )
+        
         -- Wait for new notifs to load
         timer.Simple( 0.1, function()
             hook.GetTable().Initialize.cfc_notifications_init()

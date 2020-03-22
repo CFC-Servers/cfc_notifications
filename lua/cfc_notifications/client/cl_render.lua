@@ -194,22 +194,22 @@ local function addNotifHooks( panel, popupID )
 
         local speed = CFCNotifications._animationSpeed
 
-        local speedDTX = speed * self._thinkDeltaTime
-        local speedDTY = speedDTX * 0.7 -- Make y movement a little slower
+        local speedDeltaTimeX = speed * self._thinkDeltaTime
+        local speedDeltaTimeY = speedDeltaTimeX * 0.7 -- Make y movement a little slower
 
         local x, y = self:GetPos()
-        local tx, ty = self._targetX, self._targetY
-        if not tx then return end
+        local targetX, targetY = self._targetX, self._targetY
+        if not targetX then return end
 
         local changed = false
-        if tx ~= x then
+        if targetX ~= x then
             changed = true
-            local change = math.Clamp( tx - x, -speedDTX, speedDTX )
+            local change = math.Clamp( targetX - x, -speedDeltaTimeX, speedDeltaTimeX )
             x = x + change
         end
-        if ty ~= y then
+        if targetY ~= y then
             changed = true
-            local change = math.Clamp( ty - y, -speedDTY, speedDTY )
+            local change = math.Clamp( targetY - y, -speedDeltaTimeY, speedDeltaTimeY )
             y = y + change
         end
         if changed then
