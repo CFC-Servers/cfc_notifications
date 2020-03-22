@@ -9,7 +9,7 @@ Each notification object has an ID, simply a string.
 This allows the notification to be blocked (temporarily or permanently) by specific clients (if permitted) and for networking of notification events.
 
 ## Client
-Clients can press F3 to release their mouse and interact with notifications.
+Clients can press F3 (or open chat) to release their mouse and interact with notifications.
 This library implements an options menu on the client, where they can configure:
 - Maximum visible notifications.
 - Notification width.
