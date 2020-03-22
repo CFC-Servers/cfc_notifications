@@ -1,6 +1,6 @@
 local fadePanels = {}
 
-hook.Add( "Think", "ca_think", function()
+hook.Add( "Think", "CustomAlphaTo_SetAlpha", function()
     local sTime = SysTime()
     -- Exposed as while loop so I can modify k
     -- So I can modify fadePanels while iterating it
