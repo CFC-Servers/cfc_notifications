@@ -1,4 +1,4 @@
-function addFiles( dir )
+local function addFiles( dir )
     local files, dirs = file.Find( dir .. "/*", "LUA" )
     if not files then return end
     for k, v in pairs( files ) do
