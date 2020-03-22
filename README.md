@@ -2,7 +2,7 @@
 CFC's Notification Library!
 
 ## Overview
-This library acts as a framework for notifications of any functionality to created, managed and removed.  
+This library acts as a framework for notifications of any functionality to be created, managed and removed.  
 Notifications are treated as objects with methods and fields, these objects have a type which defines how they look, behave, etc. and they can be created and displayed from server or client.  
 One can also easily define their own notification types, similar to how you would create a vgui element.
 Each notification object has an ID, simply a string.  
