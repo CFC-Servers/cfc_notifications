@@ -157,7 +157,7 @@ function CFCNotifications.reload()
     timer.Simple( 0, function()
         hook.Run( "CFC_Notifications_stop" )
         include( "cfc_notifications/shared/sh_base.lua" )
-        
+
         -- Wait for new notifs to load
         timer.Simple( 0.1, function()
             hook.GetTable().Initialize.cfc_notifications_init()

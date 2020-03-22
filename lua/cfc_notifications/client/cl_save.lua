@@ -130,7 +130,7 @@ local function addList( panel, name, onLeft, onRight )
 
         self:RemoveLine( idx )
         onRight( id )
-        
+
         CFCNotifications._reloadIgnoredPanels()
     end
 

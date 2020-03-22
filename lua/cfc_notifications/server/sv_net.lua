@@ -66,7 +66,7 @@ function CFCNotifications.Base:GetPopupIDs( ply )
     if self._popupIDs and self._popupIDs[ply] then
         return table.GetKeys( self._popupIDs[ply] )
     end
-    
+
     return {}
 end
 
