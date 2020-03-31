@@ -20,7 +20,7 @@ This library implements an options menu on the client, where they can configure:
 - Whether the mouse should default to near notifications when releasing it.
 
 They can also fire a test notification, reload the addon, or reset it to factory settings.  
-Lastly, they can see their permanemtly blocked, temporarily (per session) blocked and unblocked notifications, and move them between these 3 categories.
+Lastly, they can see their permanently blocked, temporarily (per session) blocked and unblocked notifications, and move them between these 3 categories.
 
 ## Simple usage
 There are several easy to use helper functions for sending out generic notifications.  
