@@ -87,7 +87,7 @@ All notification types support the following by default:
   - `ply` - Only required on server.
 - `notification:Send( filter )`  
   - `filter` - Only required on server, see above Simple Usage for filter definition.
-- `notificaiton:SendDelayed( delay, filter )`  
+- `notification:SendDelayed( delay, filter )`  
   Same as send, but waits for `delay` seconds to pass before sending.
 - `notification:SendRepeated( delay, reps, filter )`  
   Sends the notification `reps` times (or infinitely if `reps` == 0) with `delay` seconds between each send.
@@ -109,12 +109,12 @@ The following fields all have getters and setters defined, e.g. `displayTime` ->
 
 ### Hooks
 Notifications support hooks for events. If the notification was created on the server, the first argument to every hook will be the player it came from.
-Within any hook, `notificaiton:GetCallingPopupID()` can be called to get the ID of the notification that fired the event.
+Within any hook, `notification:GetCallingPopupID()` can be called to get the ID of the notification that fired the event.
 Default hooks are as follows:
-- `notificaiton:OnClose( wasTimeout )` - Called when the notification closes, `wasTimeout` is true if the notification closed due to timeout.
+- `notification:OnClose( wasTimeout )` - Called when the notification closes, `wasTimeout` is true if the notification closed due to timeout.
 - `notification:OnOpen( popupID )` - Called when a notification opens, useful when sending notifications from server to quickly get the popupID.
 
-Whenever a hook is called, a client side version of that hook is also called, that version is called [hookname]_CLIENT.  e.g. `notificaiton:OnClose_CLIENT()`
+Whenever a hook is called, a client side version of that hook is also called, that version is called [hookname]_CLIENT.  e.g. `notification:OnClose_CLIENT()`
 This can be useful when creating notification types, to ensure a hook is called on client.
 
 ### Notification Types
