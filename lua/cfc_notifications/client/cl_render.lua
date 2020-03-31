@@ -266,7 +266,7 @@ local function addNotifHooks( panel, popupID )
                 v.panel:OnClose()
             end
         end
-        self.data.notification:Ignore( self )
+        self.data.notification:Ignore( permanent )
     end
 end
 

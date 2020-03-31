@@ -142,8 +142,8 @@ function PANEL:_makeTitleBar()
     if self:GetCloseable() then
         table.insert( btnTexts, { "discard", "OnClose" } )
         if self:GetIgnoreable() then
-            table.insert( btnTexts, { "mute", "OnIgnore", true } )
-            table.insert( btnTexts, { "temporary mute", "OnIgnore" } )
+            table.insert( btnTexts, { "mute", "OnIgnore" } )
+            table.insert( btnTexts, { "never show again", "OnIgnore", true } )
         end
     end
 
