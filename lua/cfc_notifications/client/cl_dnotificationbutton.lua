@@ -93,7 +93,7 @@ function PANEL:Paint( w, h )
 
     -- Hover animation
     -- Adjusted animState (similar to prog) to be sinusoidal
-    local prog = adjustProg( prog )
+    local prog = adjustProg( self.animState )
     local inverseProg = 1 - prog
 
     -- Underline foreground
