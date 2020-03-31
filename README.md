@@ -125,8 +125,8 @@ Below are the predefined notification types (you can define your own) with whate
 - "Buttons" - Text notification with variable number of buttons
   - `notification:SetText( text )` - Sets the text for `notification`
   - `notification:SetTextColor( color )` - Sets the text color for `notification`
-  - `notification:AddButton( text, color, data1, data2, ... )`  
-    Adds a button with given name and text. `data1, data2, ...` will be passed to OnButtonPressed when the respective button is pressed. If not defined, `text` will be used instead.
+  - `notification:AddButton( text, backgroundColor, data1, data2, ... )`  
+    Adds a button with given text and background color. `data1, data2, ...` will be passed to OnButtonPressed when the respective button is pressed. If not defined, `text` will be used instead.
     If this function is never called, the notification will default to a green "Yes" and red "No" button
   - Hooks:
     - `notification:OnButtonPressed( data )`  
