@@ -59,16 +59,16 @@ hook.Add( "PlayerButtonDown", "CFCNotifications_render_keydown", function( ply, 
     local x, _ = input.GetCursorPos()
     local wide = CFCNotifications.getSetting( "size_x" )
 
-    if not DarkRP then
-        local shouldToggle = key == KEY_F3 or ( clickerEnabled and key == MOUSE_LEFT and x < ( ScrW() - wide ) )
-        if shouldToggle then
-            clickerEnabled = not clickerEnabled
-            local adjustCursor = CFCNotifications.getSetting( "adjust_cursor" )
-            if adjustCursor and clickerEnabled then
-                gui.SetMousePos( ScrW() - wide - 50, ScrH() / 2 )
-            end
-            gui.EnableScreenClicker( clickerEnabled )
+    local shouldToggle = key == KEY_F3 or ( clickerEnabled and key == MOUSE_LEFT and x < ( ScrW() - wide ) )
+    shouldToggle = shouldtoggle and not DarkRP
+
+    if shouldToggle then
+        clickerEnabled = not clickerEnabled
+        local adjustCursor = CFCNotifications.getSetting( "adjust_cursor" )
+        if adjustCursor and clickerEnabled then
+            gui.SetMousePos( ScrW() - wide - 50, ScrH() / 2 )
         end
+        gui.EnableScreenClicker( clickerEnabled )
     end
 
     if input.IsButtonDown( KEY_LALT ) and key == KEY_R then
