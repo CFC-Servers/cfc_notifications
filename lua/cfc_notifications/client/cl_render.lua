@@ -59,7 +59,9 @@ hook.Add( "PlayerButtonDown", "CFCNotifications_render_keydown", function( ply, 
     local x, _ = input.GetCursorPos()
     local wide = CFCNotifications.getSetting( "size_x" )
 
-    local shouldToggle = key == KEY_F3 or ( clickerEnabled and key == MOUSE_LEFT and x < ( ScrW() - wide ) )
+    local nonNotificationClick = clickerEnabled and key == MOUSE_LEFT and x < ( ScrW() - wide )
+
+    local shouldToggle = key == KEY_F3 or nonNotificationClick
     shouldToggle = shouldtoggle and not DarkRP
 
     if shouldToggle then
