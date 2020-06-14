@@ -173,13 +173,3 @@ function CFCNotifications.reload()
         end )
     end )
 end
-
-hook.Add( "PlayerInitialSpawn", "aiueufhiae", function( ply )
-    local notif = CFCNotifications.new( "CFC_PropRestorePrompt", "Buttons", true )
-    notif:SetTitle( "Restore Props" )
-    notif:SetText( "Restore props from previous server save?" )
-    notif:AddButton( "Restore", Color( 0, 255, 0 ), "restore" )
-    notif:SetTimed( false )
-    notif:SetIgnoreable( false )
-    notif:Send( ply )
-end )
