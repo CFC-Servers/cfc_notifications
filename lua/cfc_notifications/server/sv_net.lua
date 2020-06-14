@@ -37,6 +37,7 @@ end
 local function sendQueuedMessages( ply )
     local queue = CFCNotifications.playerNetQueues[ply]
     if not queue then return end
+    CFCNotifications.playerNetQueues[ply] = nil
 
     if #queue == 0 then return end
     timer.Create( "CFC_Notifications_ClearQueue_" .. ply:EntIndex(), 0.1, #queue, function()

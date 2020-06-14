@@ -28,6 +28,10 @@ if SERVER then
     hook.Add( "CFC_NotificationsReady", "trackReady", function( ply )
         CFCNotifications.playersReady[ply] = true
     end )
+
+    hook.Add( "PlayerDisconnected", "CFC_NotificationUnready", function( ply )
+        CFCNotifications.playersReady[ply] = true
+    end )
 else
     include( "cfc_notifications/client/cl_net.lua" )
     include( "cfc_notifications/client/cl_dnotification.lua" )
