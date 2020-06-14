@@ -67,6 +67,7 @@ function CFCNotifications._sendMessage( name, func, plys )
 end
 
 function CFCNotifications._sendClients( players, notif )
+    notif = table.Copy( notif )
     CFCNotifications._sendMessage( "CFC_NotificationSend", function()
         forceWriteTable( notif )
     end, players )
