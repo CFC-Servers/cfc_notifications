@@ -37,6 +37,7 @@ function CONTEXT:Remove()
     end
 
     CFCNotifications.Notifications[self:GetID()] = nil
+    self.removed = true
 end
 
 function CONTEXT:RemovePopup( id, ply )
@@ -159,13 +160,15 @@ addField( "title", "Notification", "string" )
 addField( "alwaysTiming", false, "boolean" )
 addField( "callingPopupID", -1, "number" )
 
-local function ignoreableChanged( self, ignoreable )
+local function ignoreableChanged( self )
     if SERVER then
         -- Delay as often called directly after new, which sends a message
-        timer.Simple( 0.1, function()
+        timer.Create( "CFCNotifications_SetIgnoreable_" .. self:GetID(), 0.1, 1, function()
+            if self.removed then return end
+
             net.Start( "CFC_NotificationExists" )
             net.WriteString( self:GetID() )
-            net.WriteBool( ignoreable and self:GetCloseable() )
+            net.WriteBool( self:GetIgnoreable() and self:GetCloseable() )
             net.Broadcast()
         end )
     end

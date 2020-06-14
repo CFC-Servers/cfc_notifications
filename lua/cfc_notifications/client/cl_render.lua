@@ -62,7 +62,7 @@ hook.Add( "PlayerButtonDown", "CFCNotifications_render_keydown", function( ply, 
     local nonNotificationClick = clickerEnabled and key == MOUSE_LEFT and x < ( ScrW() - wide )
 
     local shouldToggle = key == KEY_F3 or nonNotificationClick
-    shouldToggle = shouldtoggle and not DarkRP
+    shouldToggle = shouldToggle and not DarkRP
 
     if shouldToggle then
         clickerEnabled = not clickerEnabled
@@ -81,6 +81,8 @@ hook.Add( "PlayerButtonDown", "CFCNotifications_render_keydown", function( ply, 
 end )
 
 hook.Add( "PlayerBindPress", "CFCNotifcations_render_numdown", function( _, bind )
+    if not input.IsButtonDown( KEY_LALT ) then return end
+
     local v = bindTranslation[bind]
     if not v then return end
     if #CFCNotifications._popups == 0 then return end

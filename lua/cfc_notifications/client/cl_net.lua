@@ -17,10 +17,12 @@ net.Receive( "CFC_NotificationExists", function( len )
     local exists = net.ReadBool()
     local hasValue = table.HasValue( CFCNotifications._serverNotificationIDs, id )
 
-    if exists and not hasValue then
+    if exists == hasValue then return end -- No change
+
+    if exists then
         table.insert( CFCNotifications._serverNotificationIDs, id )
         CFCNotifications._reloadIgnoredPanels()
-    elseif not exists and hasValue then
+    else
         table.RemoveByValue( CFCNotifications._serverNotificationIDs, id )
         CFCNotifications._reloadIgnoredPanels()
     end
