@@ -85,6 +85,8 @@ function CFCNotifications.new( id, notificationType, forceCreate )
     mt.__index = CONTEXT
     setmetatable( notif, mt )
 
+    notif:SetIgnoreable( true )
+
     -- Initialize notification
     if notif.Init then
         notif:Init()
@@ -92,14 +94,7 @@ function CFCNotifications.new( id, notificationType, forceCreate )
 
     CFCNotifications.Notifications[id] = notif
 
-    if SERVER then
-        if notif:GetIgnoreable() then
-            net.Start( "CFC_NotificationExists" )
-            net.WriteString( id )
-            net.WriteBool( true )
-            net.Broadcast()
-        end
-    else
+    if CLIENT then
         CFCNotifications._reloadIgnoredPanels()
     end
 

@@ -71,10 +71,10 @@ function CFCNotifications.Base:GetPopupIDs( ply )
 end
 
 net.Receive( "CFC_NotificationExists", function( len, ply )
-    for k, v in pairs( CFCNotifications.Notifications ) do
+    for id, notif in pairs( CFCNotifications.Notifications ) do
         net.Start( "CFC_NotificationExists" )
-        net.WriteString( k )
-        net.WriteBool( true )
+        net.WriteString( id )
+        net.WriteBool( notif:GetIgnoreable() and notif:GetCloseable() )
         net.Send( ply )
     end
 end )
