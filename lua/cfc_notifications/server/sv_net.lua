@@ -18,11 +18,57 @@ local function forceWriteTable( tab )
     net.WriteType( nil )
 end
 
+CFCNotifications.playerNetQueues = {}
+
+local function splitReady( plys )
+    local ready = {}
+    local notReady = {}
+    for k, ply in pairs( plys ) do
+        if CFCNotifications.playersReady[ply] then
+            table.insert( ready, ply )
+        else
+            table.insert( notReady, ply )
+        end
+    end
+
+    return ready, notReady
+end
+
+local function sendQueuedMessages( ply )
+    local queue = CFCNotifications.playerNetQueues[ply]
+    if not queue then return end
+
+    if #queue == 0 then return end
+    timer.Create( "CFC_Notifications_ClearQueue_" .. ply:EntIndex(), 0.1, #queue, function()
+        local func = table.remove( queue, 1 )
+        pcall( func )
+    end )
+end
+
+function CFCNotifications._sendMessage( name, func, plys )
+    if type( plys ) == "Player" then plys = { plys } end
+    local ready, notReady = splitReady( plys )
+
+    if #ready > 0 then
+        net.Start( name )
+        func()
+        net.Send( ready )
+    end
+
+    for k, ply in pairs( notReady ) do
+        CFCNotifications.playerNetQueues[ply] = CFCNotifications.playerNetQueues[ply] or {}
+        table.insert( CFCNotifications.playerNetQueues[ply], function()
+            net.Start( name )
+            func()
+            net.Send( ply )
+        end )
+    end
+end
+
 function CFCNotifications._sendClients( players, notif )
-    -- WriteTable can't write functions, so we're using forceWriteTable
-    net.Start( "CFC_NotificationSend" )
-    forceWriteTable( notif )
-    net.Send( players )
+    CFCNotifications._sendMessage( "CFC_NotificationSend", function()
+        forceWriteTable( notif )
+    end, players )
 end
 
 net.Receive( "CFC_NotificationEvent", function( len, ply )
@@ -51,11 +97,12 @@ net.Receive( "CFC_NotificationEvent", function( len, ply )
 end )
 
 function CFCNotifications.Base:_callClient( ply, funcName, ... )
-    net.Start( "CFC_NotificationEvent" )
-    net.WriteString( self:GetID() )
-    net.WriteString( funcName )
-    net.WriteTable( { ... } )
-    net.Send( ply )
+    local data = { ... }
+    CFCNotifications._sendMessage( "CFC_NotificationEvent", function()
+        net.WriteString( self:GetID() )
+        net.WriteString( funcName )
+        net.WriteTable( data )
+    end, ply )
 end
 
 function CFCNotifications.Base:IsNotificationShowing( ply )
@@ -70,7 +117,9 @@ function CFCNotifications.Base:GetPopupIDs( ply )
     return {}
 end
 
-net.Receive( "CFC_NotificationExists", function( len, ply )
+net.Receive( "CFC_NotificationReady", function( len, ply )
+    hook.Run( "CFC_NotificationsReady", ply )
+    sendQueuedMessages( ply )
     for id, notif in pairs( CFCNotifications.Notifications ) do
         net.Start( "CFC_NotificationExists" )
         net.WriteString( id )

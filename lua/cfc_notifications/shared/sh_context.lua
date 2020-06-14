@@ -27,10 +27,11 @@ function CONTEXT:Remove()
         for k, v in pairs( player.GetAll() ) do
             self:RemovePopups( v )
         end
-        net.Start( "CFC_NotificationExists" )
-        net.WriteString( self:GetID() )
-        net.WriteBool( false )
-        net.Broadcast()
+
+        CFCNotifications._sendMessage( "CFC_NotificationExists", function()
+            net.WriteString( self:GetID() )
+            net.WriteBool( false )
+        end, player.GetAll() )
     else
         self:RemovePopups()
         CFCNotifications._reloadIgnoredPanels()
@@ -165,11 +166,10 @@ local function ignoreableChanged( self )
         -- Delay as often called directly after new, which sends a message
         timer.Create( "CFCNotifications_SetIgnoreable_" .. self:GetID(), 0.1, 1, function()
             if self.removed then return end
-
-            net.Start( "CFC_NotificationExists" )
-            net.WriteString( self:GetID() )
-            net.WriteBool( self:GetIgnoreable() and self:GetCloseable() )
-            net.Broadcast()
+            CFCNotifications._sendMessage( "CFC_NotificationExists", function()
+                net.WriteString( self:GetID() )
+                net.WriteBool( self:GetIgnoreable() and self:GetCloseable() )
+            end, player.GetAll() )
         end )
     end
 end

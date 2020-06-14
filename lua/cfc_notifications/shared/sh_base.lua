@@ -21,7 +21,13 @@ if SERVER then
     util.AddNetworkString( "CFC_NotificationSend" ) -- send a notification from server
     util.AddNetworkString( "CFC_NotificationEvent" ) -- on notif events, like OnClose
     util.AddNetworkString( "CFC_NotificationExists" ) -- Keeping client up to date on server side notifications, for ignore
+    util.AddNetworkString( "CFC_NotificationReady" )
     include( "cfc_notifications/server/sv_net.lua" )
+
+    CFCNotifications.playersReady = {}
+    hook.Add( "CFC_NotificationsReady", "trackReady", function( ply )
+        CFCNotifications.playersReady[ply] = true
+    end )
 else
     include( "cfc_notifications/client/cl_net.lua" )
     include( "cfc_notifications/client/cl_dnotification.lua" )
@@ -32,7 +38,7 @@ else
 
     hook.Add( "InitPostEntity", "CFCNotifications_request_data", function()
         -- Acting as a way of saying "I'm ready"
-        net.Start( "CFC_NotificationExists" )
+        net.Start( "CFC_NotificationReady" )
         net.SendToServer()
     end )
 end
@@ -161,3 +167,13 @@ function CFCNotifications.reload()
         end )
     end )
 end
+
+hook.Add( "PlayerInitialSpawn", "aiueufhiae", function( ply )
+    local notif = CFCNotifications.new( "CFC_PropRestorePrompt", "Buttons", true )
+    notif:SetTitle( "Restore Props" )
+    notif:SetText( "Restore props from previous server save?" )
+    notif:AddButton( "Restore", Color( 0, 255, 0 ), "restore" )
+    notif:SetTimed( false )
+    notif:SetIgnoreable( false )
+    notif:Send( ply )
+end )
