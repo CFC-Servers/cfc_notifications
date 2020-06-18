@@ -32,6 +32,11 @@ if SERVER then
     hook.Add( "PlayerDisconnected", "CFC_NotificationUnready", function( ply )
         CFCNotifications.playersReady[ply] = true
     end )
+
+    -- Give chance for other addons to load
+    timer.Simple( 0, function()
+        hook.Run( "CFC_Notifications_init" )
+    end )
 else
     include( "cfc_notifications/client/cl_net.lua" )
     include( "cfc_notifications/client/cl_dnotification.lua" )
