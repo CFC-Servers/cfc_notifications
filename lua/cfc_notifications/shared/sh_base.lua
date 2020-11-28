@@ -34,7 +34,7 @@ if SERVER then
     end )
 
     -- Give chance for other addons to load
-    timer.Simple( 0, function()
+    hook.Add( "Initialize", "cfc_notifications_init", function()
         hook.Run( "CFC_Notifications_init" )
     end )
 else
