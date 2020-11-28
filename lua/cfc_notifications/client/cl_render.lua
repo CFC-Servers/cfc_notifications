@@ -107,6 +107,9 @@ hook.Add( "CFC_Notifications_init", "render_init", function()
     container.Paint = nil
     container:SetSize( wide, h )
     container:SetPos( ScrW() - wide, 0 )
+    function container:Think()
+        self:MoveToBack()
+    end
 
     local freeCursorLabel = vgui.Create( "DLabel" )
     freeCursorLabel:SetPos( ScrW() - wide, h )
