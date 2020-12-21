@@ -350,10 +350,10 @@ local function checkText( canvas, text )
         end
     end
 
-    label:SetTextColor( Color( 0, 0, 255, 255 ) ) --Since :Remove() applies on the next frame
+    label:SetTextColor( Color( 0, 0, 0, 0 ) ) --Since :Remove() applies on the next frame
     label:SizeToContents()
     local _, height = label:GetSize()
-    --label:Remove()
+    label:Remove()
 
     return text, height
 end
@@ -367,10 +367,6 @@ function CFCNotifications._removePopupByID( id )
     end
     return false
 end
-
-
-
-
 
 function CFCNotifications._removePopupByNotificationID( id )
     for k, v in pairs( CFCNotifications._popups ) do
@@ -425,8 +421,8 @@ function CFCNotifications._addNewPopup( notif )
     panel:SetSize( pWidth, 1 )
 
     local text, pHeight = checkText( panel:GetCanvas(), notif:GetText() )
-    pHeight = pHeight + 30
-    panel:SetWidth( pHeight )
+    pHeight = math.max( pHeight + 30, 100 )
+    panel:SetHeight( pHeight )
     notif:SetText( text )
 
     panel:SetCloseable( canClose )
