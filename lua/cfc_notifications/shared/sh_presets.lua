@@ -52,7 +52,6 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
         local label = Label( self:GetText(), canvas )
         label:SetFont( "CFC_Notifications_Big" )
         label:SizeToContents()
-        label:SetPos( 10, 0 )
         label:SetTextColor( self:GetTextColor() )
 
         local this = self
