@@ -350,10 +350,10 @@ local function checkText( canvas, text )
         end
     end
 
-    label:SetTextColor( Color( 0, 0, 0, 0 ) ) --Since :Remove() applies on the next frame
+    label:SetTextColor( Color( 0, 0, 255, 255 ) ) --Since :Remove() applies on the next frame
     label:SizeToContents()
     local _, height = label:GetSize()
-    label:Remove()
+    --label:Remove()
 
     return text, height
 end
