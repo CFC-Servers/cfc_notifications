@@ -368,6 +368,10 @@ function CFCNotifications._removePopupByID( id )
     return false
 end
 
+
+
+
+
 function CFCNotifications._removePopupByNotificationID( id )
     for k, v in pairs( CFCNotifications._popups ) do
         if v.notification:GetID() == id then
