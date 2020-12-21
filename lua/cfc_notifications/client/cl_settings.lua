@@ -49,14 +49,6 @@ CFCNotifications._settingsTemplate = {
         default = 400,
     },
     {
-        displayName = "Notification height",
-        name = "size_y",
-        type = "int",
-        min = 70,
-        max = 300,
-        default = 100,
-    },
-    {
         displayName = "First notification Y",
         name = "start_y_fraction",
         type = "float",

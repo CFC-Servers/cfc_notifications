@@ -158,6 +158,7 @@ addField( "timed", true, "boolean" )
 addField( "priority", CFCNotifications.PRIORITY_LOW, "number" )
 addField( "allowMultiple", false, "boolean" )
 addField( "title", "Notification", "string" )
+addField( "extraHeight", 0, "number" )
 addField( "alwaysTiming", false, "boolean" )
 addField( "callingPopupID", -1, "number" )
 

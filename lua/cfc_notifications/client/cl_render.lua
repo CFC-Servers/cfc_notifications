@@ -421,7 +421,9 @@ function CFCNotifications._addNewPopup( notif )
     panel:SetSize( pWidth, 1 )
 
     local text, pHeight = checkText( panel:GetCanvas(), notif:GetText() )
-    pHeight = math.max( pHeight + 30, 100 )
+    local heightOffset = 50 + notif:GetExtraHeight()
+
+    pHeight = math.max( pHeight + heightOffset, 100 )
     panel:SetHeight( pHeight )
     notif:SetText( text )
 
