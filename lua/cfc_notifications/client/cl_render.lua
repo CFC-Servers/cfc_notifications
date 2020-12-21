@@ -415,12 +415,10 @@ function CFCNotifications._addNewPopup( notif )
     local canClose = notif:GetCloseable()
     local canIgnore = notif:GetIgnoreable()
     local priority = notif:GetPriority()
-
     local pWidth = CFCNotifications.getSetting( "size_x" )
-    local pHeight = 1
 
     local panel = vgui.Create( "DNotification", CFCNotifications.container )
-    panel:SetSize( pWidth, pHeight )
+    panel:SetSize( pWidth, 1 )
 
     local text, pHeight = checkText( panel:GetCanvas(), notif:GetText() )
      pHeight = pHeight + 30
