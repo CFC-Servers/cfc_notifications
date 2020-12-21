@@ -421,10 +421,10 @@ function CFCNotifications._addNewPopup( notif )
     panel:SetSize( pWidth, 1 )
 
     local text, pHeight = checkText( panel:GetCanvas(), notif:GetText() )
-     pHeight = pHeight + 30
-     panel:SetWidth( pHeight )
+    pHeight = pHeight + 30
+    panel:SetWidth( pHeight )
     notif:SetText( text )
-
+    
     panel:SetCloseable( canClose )
     panel:SetIgnoreable( canIgnore )
     if notif:GetTimed() then
