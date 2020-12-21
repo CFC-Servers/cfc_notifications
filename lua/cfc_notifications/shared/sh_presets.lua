@@ -1,79 +1,13 @@
--- Create main text
-function CFCNotifications.drawMessageText( canvas, text, color )
-    local maxWidth = CFCNotifications.getSetting( "size_x" ) - 10 --Get client's width setting and account for textbox position
-
-    local label = Label( text, canvas )
-    local length = text:len()
-    label:SetFont( "CFC_Notifications_Big" )
-
-    if length > 0 then
-        local labelWidth, _ = label:GetTextSize()
-        local newText = ""
-
-        if labelWidth > maxWidth then
-            if text:find( "\n" ) then
-                local lines = text:Split( "\n" )
-                local biggestLength = 0
-                local lengths = {}
-
-                for _, line in pairs( lines ) do
-                    local len = line:len()
-                    table.insert( lengths, len )
-
-                    if len > biggestLength then
-                        biggestLength = len
-                    end
-                end
-
-                local charWidth = labelWidth / biggestLength
-                local chunkLength = math.floor( maxWidth / charWidth )
-
-                for i, line in pairs( lines ) do
-                    local len = lengths[i]
-
-                    if len > chunkLength then
-                        local index = 1
-
-                        while index <= length do
-                            newText = newText .. line:sub( index, math.min( index + chunkLength - 1, len ) ) .. "\n"
-                            index = index + chunkLength
-                        end
-                    else
-                        newText = newText .. line .. "\n"
-                    end
-                end
-
-                newText = newText:sub( 1, newText:len() - 1 ) --Remove extra newline at the end
-            else
-                local charWidth = labelWidth / length
-                local chunkLength = math.floor( maxWidth / charWidth )
-                local index = 1
-
-                while index <= length do
-                    newText = newText .. text:sub( index, math.min( index + chunkLength - 1, length ) ) .. "\n"
-                    index = index + chunkLength
-                end
-
-                newText = newText:sub( 1, newText:len() - 1 ) --Remove extra newline at the end
-            end
-
-            label:SetText( newText )
-        end
-    end
-
-    label:SizeToContents()
-    label:SetTextColor( color or color_white )
-
-    return label
-end
-
 -- Simple label
 CFCNotifications.registerNotificationType( "Text", function( CONTEXT )
     CFCNotifications.contextHelpers.addField( CONTEXT, "text", "", "string" )
     CFCNotifications.contextHelpers.addField( CONTEXT, "textColor", Color( 255, 255, 255 ), "Color" )
 
     function CONTEXT:PopulatePanel( canvas )
-        CFCNotifications.drawMessageText( canvas, self:GetText(), self:GetTextColor() )
+        local label = Label( self:GetText(), canvas )
+        label:SetFont( "CFC_Notifications_Big" )
+        label:SizeToContents()
+        label:SetTextColor( self:GetTextColor() )
     end
 end )
 
@@ -115,7 +49,11 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
     end
 
     function CONTEXT:PopulatePanel( canvas, popupID, panel )
-        CFCNotifications.drawMessageText( canvas, self:GetText(), self:GetTextColor() )
+        local label = Label( self:GetText(), canvas )
+        label:SetFont( "CFC_Notifications_Big" )
+        label:SizeToContents()
+        label:SetPos( 10, 0 )
+        label:SetTextColor( self:GetTextColor() )
 
         local this = self
 

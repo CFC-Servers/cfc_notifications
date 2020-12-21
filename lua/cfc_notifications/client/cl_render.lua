@@ -101,7 +101,7 @@ end
 
 hook.Add( "CFC_Notifications_init", "render_init", function()
     local wide = CFCNotifications.getSetting( "size_x" )
-    local h = CFCNotifications.getSetting( "start_y_fraction" ) * ScrH()
+    local h = CFCNotifications.getSetting( "start_y_fraction" ) * ScrH() -- Needs to adjust based on variable height
 
     local container = vgui.Create( "DPanel" )
     container.Paint = nil
@@ -282,6 +282,77 @@ local function addNotifHooks( panel, popupID )
     end
 end
 
+local function wrapText( canvas, text )
+    local maxWidth = CFCNotifications.getSetting( "size_x" ) - 10 --Get client's width setting and account for textbox position
+
+    local label = Label( text, canvas )
+    local length = text:len()
+    label:SetFont( "CFC_Notifications_Big" )
+
+    if length > 0 then
+        local labelWidth, _ = label:GetTextSize()
+        local newText = ""
+
+        if labelWidth > maxWidth then
+            if text:find( "\n" ) then
+                local lines = text:Split( "\n" )
+                local biggestLength = 0
+                local lengths = {}
+
+                for _, line in pairs( lines ) do
+                    local len = line:len()
+                    table.insert( lengths, len )
+
+                    if len > biggestLength then
+                        biggestLength = len
+                    end
+                end
+
+                local charWidth = labelWidth / biggestLength
+                local chunkLength = math.floor( maxWidth / charWidth )
+
+                for i, line in pairs( lines ) do
+                    local len = lengths[i]
+
+                    if len > chunkLength then
+                        local index = 1
+
+                        while index <= length do
+                            newText = newText .. line:sub( index, math.min( index + chunkLength - 1, len ) ) .. "\n"
+                            index = index + chunkLength
+                        end
+                    else
+                        newText = newText .. line .. "\n"
+                    end
+                end
+
+                newText = newText:sub( 1, newText:len() - 1 ) --Remove extra newline at the end
+            else
+                local charWidth = labelWidth / length
+                local chunkLength = math.floor( maxWidth / charWidth )
+                local index = 1
+
+                while index <= length do
+                    newText = newText .. text:sub( index, math.min( index + chunkLength - 1, length ) ) .. "\n"
+                    index = index + chunkLength
+                end
+
+                newText = newText:sub( 1, newText:len() - 1 ) --Remove extra newline at the end
+            end
+
+            text = newText
+            label:SetText( text )
+        end
+    end
+
+    label:SetTextColor( Color( 0, 0, 0, 0 ) ) --Since :Remove() applies on the next frame
+    label:SizeToContents()
+    local _, height = label:GetSize()
+    label:Remove()
+
+    return text, height
+end
+
 function CFCNotifications._removePopupByID( id )
     for k, v in pairs( CFCNotifications._popups ) do
         if v.popupID == id then
@@ -341,7 +412,8 @@ function CFCNotifications._addNewPopup( notif )
     local priority = notif:GetPriority()
 
     local pWidth = CFCNotifications.getSetting( "size_x" )
-    local pHeight = CFCNotifications.getSetting( "size_y" )
+    local text, pHeight = wrapText( panel:GetCanvas(), notif:GetText() )
+    notif:SetText( text )
 
     local panel = vgui.Create( "DNotification", CFCNotifications.container )
     panel:SetSize( pWidth, pHeight )
@@ -355,6 +427,7 @@ function CFCNotifications._addNewPopup( notif )
     if priorityColors[priority] then
         panel:SetTitleBarColor( priorityColors[priority] )
     end
+    
     panel:Populate()
     panel:InvalidateLayout( true )
 
