@@ -67,8 +67,9 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
         local btnW = btnTotalW - btnGap
         local btnH = 30
         local btnBottomMargin = 10
-
         local btnY = h - ( btnH + btnBottomMargin )
+
+        self:SetExtraHeight( btnH + btnBottomMargin )
 
         local btns = {}
         for k, btnData in ipairs( self._buttons ) do

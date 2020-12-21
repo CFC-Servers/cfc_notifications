@@ -7,13 +7,13 @@ Notifications are treated as objects with methods and fields, these objects have
 One can also easily define their own notification types, similar to how you would create a vgui element.
 Each notification object has an ID, simply a string.  
 This allows the notification to be blocked (temporarily or permanently) by specific clients (if permitted) and for networking of notification events.
+Notifications will automatically wrap text and grow taller to accomodate long messages.
 
 ## Client
 Clients can press F3 (or open chat) to release their mouse and interact with notifications.
 This library implements an options menu on the client, where they can configure:
 - Maximum visible notifications.
 - Notification width.
-- Notification Height.
 - Vertical position of first notification.
 - Enable/disable the pop sound.
 - Minimum priority required for the pop sound.
@@ -106,6 +106,7 @@ The following fields all have getters and setters defined, e.g. `displayTime` ->
 - `allowMultiple` - Determines if this notification can have >1 popup. (default: `false`)
 - `title` - Title text for a notification. (default: `"Notification"`)
 - `alwaysTiming` - When too many notifications are sent, some are hidden, if alwaysTiming is false, they will not decrease their time left while not visible. (default: `false`)
+- `extraHeight` - Provides additional height to the notification, useful for notifications with non-text components.
 
 ### Hooks
 Notifications support hooks for events. If the notification was created on the server, the first argument to every hook will be the player it came from.
@@ -122,9 +123,12 @@ Below are the predefined notification types (you can define your own) with whate
 - "Text" - Simple text notification
   - `notification:SetText( text )` - Sets the text for `notification`
   - `notification:SetTextColor( color )` - Sets the text color for `notification`
+  - `notification:SetExtraHeight()` - Sets additional height for `notification`
 - "Buttons" - Text notification with variable number of buttons
   - `notification:SetText( text )` - Sets the text for `notification`
   - `notification:SetTextColor( color )` - Sets the text color for `notification`
+  - `notification:SetExtraHeight()` - Sets additional height for `notification`
+    Defauts to 40 to give room for the buttons.
   - `notification:AddButton( text, buttonColor, data1, data2, ... )`  
     Adds a button with given text and color. The button text, underline and click animation will be `buttonColor`. `data1, data2, ...` will be passed to OnButtonPressed when the respective button is pressed. If not defined, `text` will be used instead.
     If this function is never called, the notification will default to a green "Yes" and red "No" button
