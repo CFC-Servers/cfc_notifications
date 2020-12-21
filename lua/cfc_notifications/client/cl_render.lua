@@ -1,4 +1,4 @@
-cCFCNotifications._popups = {}
+CFCNotifications._popups = {}
 CFCNotifications._popupIDCounter = 0
 CFCNotifications._animationSpeed = 5000
 local notifSpacing = 5
@@ -418,11 +418,9 @@ function CFCNotifications._addNewPopup( notif )
     local pWidth = CFCNotifications.getSetting( "size_x" )
 
     local panel = vgui.Create( "DNotification", CFCNotifications.container )
-    player.GetByID( 1 ):ChatPrint( tostring( panel ) )
     panel:SetSize( pWidth, 1 )
 
     local text, pHeight = checkText( panel:GetCanvas(), notif:GetText() )
-    player.GetByID( 1 ):ChatPrint( tostring( panel ) )
     pHeight = pHeight + 30
     panel:SetWidth( pHeight )
     notif:SetText( text )
@@ -458,9 +456,7 @@ function CFCNotifications._addNewPopup( notif )
     local idx = addData( data )
 
     panel.data = data
-    player.GetByID( 1 ):ChatPrint( tostring( panel ) )
     notif:PopulatePanel( panel:GetCanvas(), id, panel )
-    player.GetByID( 1 ):ChatPrint( tostring( panel ) )
     local maxNotif = CFCNotifications.getSetting( "max_notifications" )
     if idx > maxNotif then
         panel:Hide()
