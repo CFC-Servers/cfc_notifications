@@ -101,7 +101,7 @@ end
 
 hook.Add( "CFC_Notifications_init", "render_init", function()
     local wide = CFCNotifications.getSetting( "size_x" )
-    local h = CFCNotifications.getSetting( "start_y_fraction" ) * ScrH() -- Needs to adjust based on variable height
+    local h = CFCNotifications.getSetting( "start_y_fraction" ) * ScrH()
 
     local container = vgui.Create( "DPanel" )
     container.Paint = nil
