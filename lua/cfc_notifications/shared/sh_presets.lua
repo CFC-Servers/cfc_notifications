@@ -23,6 +23,10 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
     -- These require player input, so are more important than other notifications
     CONTEXT._priority = CFCNotifications.PRIORITY_NORMAL
 
+    local btnH = 30
+    local btnBottomMargin = 10
+    CONTEXT:SetExtraHeight( btnH + btnBottomMargin - 20 )
+
     function CONTEXT:_addDefaultButtons()
         self:AddButton( "Yes", Color( 0, 255, 0 ), true )
         self:AddButton( "No", Color( 255, 0, 0 ), false )
@@ -65,11 +69,7 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
         local btnTotalW = ( w / #self._buttons )
 
         local btnW = btnTotalW - btnGap
-        local btnH = 30
-        local btnBottomMargin = 10
         local btnY = h - ( btnH + btnBottomMargin )
-
-        self:SetExtraHeight( btnH + btnBottomMargin )
 
         local btns = {}
         for k, btnData in ipairs( self._buttons ) do
