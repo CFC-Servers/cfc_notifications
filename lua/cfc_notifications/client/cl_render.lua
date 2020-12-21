@@ -317,8 +317,6 @@ local function wrapText( text, maxWidth, labelWidth )
                 newText = newText .. line .. "\n"
             end
         end
-
-        newText = newText:sub( 1, newText:len() - 1 ) --Remove extra newline at the end
     else
         local charWidth = labelWidth / length
         local chunkLength = math.floor( maxWidth / charWidth )
@@ -328,9 +326,9 @@ local function wrapText( text, maxWidth, labelWidth )
             newText = newText .. text:sub( index, math.min( index + chunkLength - 1, length ) ) .. "\n"
             index = index + chunkLength
         end
-
-        newText = newText:sub( 1, newText:len() - 1 ) --Remove extra newline at the end
     end
+
+    newText = newText:Trim( "\n" )
 
     return newText
 end
