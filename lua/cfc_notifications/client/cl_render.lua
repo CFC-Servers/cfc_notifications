@@ -233,9 +233,7 @@ local function addNotifHooks( panel, popupID )
                 local idx = table.KeyFromValue( CFCNotifications._popups, self.data )
                 for k = idx + 1, #CFCNotifications._popups do -- move all above down
                     local cPanel = CFCNotifications._popups[k].panel
-                    if cPanel:IsVisible() then
                         cPanel._targetY = cPanel._targetY + ( pHeight + notifSpacing )
-                    end
                 end
 
                 -- Fade and slide the next hidden notif in
@@ -473,9 +471,7 @@ function CFCNotifications._addNewPopup( notif )
         -- move all above panels up one
         for k = idx + 1, #CFCNotifications._popups do
             local cPanel = CFCNotifications._popups[k].panel
-            if cPanel:IsVisible() then
                 cPanel._targetY = cPanel._targetY - ( pHeight + notifSpacing )
-            end
         end
 
         -- Hide the top panel if it exists
