@@ -235,9 +235,7 @@ end
 hook.Add( "CFC_Notifications_init", "settings_init", function()
     CFCNotifications.clearSettingsCache()
     -- displays a normal test notification that shows for 5 seconds
-    local notif = CFCNotifications.new( "test", "Text", true )
-
-    CFCNotifications._testNotification = notif
+    CFCNotifications._testNotification = CFCNotifications.new( "test", "Text", true )
 end )
 
 hook.Add( "Initialize", "cfc_notifications_init", function()
