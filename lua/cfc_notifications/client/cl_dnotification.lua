@@ -48,7 +48,7 @@ function PANEL:Think()
 
     -- Incrementing time here so the timer doesn't decrement when the notification isnt visible ( aka, when there's a lot of notifications at once )
     if not self._showTimer then return end
-    if self:GetAlwaysTiming() or self:IsVisible() then
+    if self:GetAlwaysTiming() or not self._hidden then
         self._curTime = self._curTime + deltaTime
     end
 
