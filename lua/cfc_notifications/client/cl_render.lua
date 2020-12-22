@@ -244,7 +244,15 @@ local function addNotifHooks( panel, popupID )
                 if topPanelData then
                     local topPanel = topPanelData.panel
                     local notifX = CFCNotifications.container:GetWide() - pWidth
-                    local notifY = CFCNotifications.container:GetTall() - ( pHeight + ( maxNotif - 1 ) * ( pHeight + notifSpacing ) )
+                    local notifY
+
+                    if idx > 1 then
+                        local oldTopPanel = CFCNotifications._popups[maxNotif].panel
+                        notifY = oldTopPanel._targetY - topPanel:GetTall() - notifSpacing
+                    else
+                        notifY = CFCNotifications.getSetting( "start_y_fraction" ) * ScrH() - topPanel:GetTall() - notifSpacing
+                    end
+
                     topPanel:SetPos( notifX, notifY - ( pHeight + notifSpacing ) )
                     topPanel._targetX = notifX
                     topPanel._targetY = notifY
@@ -482,7 +490,14 @@ function CFCNotifications._addNewPopup( notif )
 
         -- slide self in left
         local notifX = CFCNotifications.container:GetWide()
-        local notifY = CFCNotifications.container:GetTall() - ( pHeight + ( idx - 1 ) * ( pHeight + notifSpacing ) )
+        local notifY
+
+        if idx > 1 then
+            local panelBelow = CFCNotifications._popups[idx - 1].panel
+            notifY = panelBelow._targetY - pHeight - notifSpacing
+        else
+            notifY = CFCNotifications.getSetting( "start_y_fraction" ) * ScrH() - pHeight - notifSpacing
+        end
 
         panel:SetPos( notifX, notifY )
         panel._targetX = 0
