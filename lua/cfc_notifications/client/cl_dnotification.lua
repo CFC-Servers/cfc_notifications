@@ -75,7 +75,7 @@ end
 
 function PANEL:Paint( w, h )
     solidColorPaint( self, w, h )
-    if not self._showTimer then return end
+    if not self._showTimer or not self._timerFraction then return end
 
     local frac = self._timerFraction
     local barHeight = 4
