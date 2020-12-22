@@ -241,15 +241,9 @@ local function addNotifHooks( panel, popupID )
                 local topPanelData = CFCNotifications._popups[maxNotif + 1]
                 if topPanelData then
                     local topPanel = topPanelData.panel
+                    local oldTopPanel = CFCNotifications._popups[maxNotif].panel
                     local notifX = CFCNotifications.container:GetWide() - pWidth
-                    local notifY
-
-                    if idx > 1 then
-                        local oldTopPanel = CFCNotifications._popups[maxNotif].panel
-                        notifY = oldTopPanel._targetY - topPanel:GetTall() - notifSpacing
-                    else
-                        notifY = CFCNotifications.getSetting( "start_y_fraction" ) * ScrH() - topPanel:GetTall() - notifSpacing
-                    end
+                    local notifY = oldTopPanel._targetY - topPanel:GetTall() - notifSpacing
 
                     topPanel:SetPos( notifX, notifY - ( pHeight + notifSpacing ) )
                     topPanel._targetX = notifX
