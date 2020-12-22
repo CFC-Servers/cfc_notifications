@@ -15,6 +15,14 @@ hook.Add( "Think", "CustomAlphaTo_SetAlpha", function()
 
             if lerpVal == 1 then
                 table.remove( fadePanels, k )
+                if v._ca_callback then
+                    v:_ca_callback()
+                end
+                v._ca_timeStart = nil
+                v._ca_timeEnd = nil
+                v._ca_startAlpha = nil
+                v._ca_endAlpha = nil
+                v._ca_callback = nil
                 k = k - 1
             end
         end
@@ -23,12 +31,13 @@ hook.Add( "Think", "CustomAlphaTo_SetAlpha", function()
 end )
 
 local function AddCustomAlphaTo( CONTEXT )
-    function CONTEXT:CustomAlphaTo( targetAlpha, time )
+    function CONTEXT:CustomAlphaTo( targetAlpha, time, cb )
         local sTime = SysTime()
         self._ca_timeStart = sTime
         self._ca_timeEnd = sTime + time
         self._ca_startAlpha = self:GetAlpha()
         self._ca_endAlpha = targetAlpha
+        self._ca_callback = cb
         table.insert( fadePanels, self )
     end
 end

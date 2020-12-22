@@ -130,6 +130,7 @@ hook.Add( "CFC_Notifications_init", "render_init", function()
 
     function othersLabel:Think()
         local maxNotif = CFCNotifications.getSetting( "max_notifications" )
+        local shouldShow = false
         if #CFCNotifications._popups > maxNotif then
             local count = -1
             for k = #CFCNotifications._popups, 1, -1 do
@@ -140,19 +141,15 @@ hook.Add( "CFC_Notifications_init", "render_init", function()
                         self:SetText( "+ " .. count .. " other" .. ( count == 1 and "" or "s" ) )
                         local _, y = panel:GetPos()
                         self:SetPos( ScrW() - wide, y - 25 )
+                        shouldShow = true
                     end
                     break
                 end
             end
-            if not self._prevShow then
-                self._prevShow = true
-                self:CustomAlphaTo( 255, 0.3 )
-            end
-        else
-            if self._prevShow then
-                self._prevShow = false
-                self:CustomAlphaTo( 0, 0.3 )
-            end
+        end
+        if self._prevShow ~= shouldShow then
+            self._prevShow = shouldShow
+            self:CustomAlphaTo( shouldShow and 255 or 0, 0.3 )
         end
     end
 
@@ -202,7 +199,6 @@ local function addNotifHooks( panel, popupID )
     local oldThink = panel.Think
     function panel:Think()
         oldThink( self )
-        if not self:IsVisible() then return end
 
         local speed = CFCNotifications._animationSpeed
 
@@ -228,12 +224,11 @@ local function addNotifHooks( panel, popupID )
             self:SetPos( x, y )
             if self._shouldRemove and x >= self:GetParent():GetWide() then
                 local pHeight = self:GetTall()
-                local pWidth = self:GetWide()
 
                 local idx = table.KeyFromValue( CFCNotifications._popups, self.data )
                 for k = idx + 1, #CFCNotifications._popups do -- move all above down
                     local cPanel = CFCNotifications._popups[k].panel
-                        cPanel._targetY = cPanel._targetY + ( pHeight + notifSpacing )
+                    cPanel._targetY = cPanel._targetY + ( pHeight + notifSpacing )
                 end
 
                 -- Fade and slide the next hidden notif in
@@ -241,13 +236,6 @@ local function addNotifHooks( panel, popupID )
                 local topPanelData = CFCNotifications._popups[maxNotif + 1]
                 if topPanelData then
                     local topPanel = topPanelData.panel
-                    local oldTopPanel = CFCNotifications._popups[maxNotif].panel
-                    local notifX = CFCNotifications.container:GetWide() - pWidth
-                    local notifY = oldTopPanel._targetY - topPanel:GetTall() - notifSpacing
-
-                    topPanel:SetPos( notifX, notifY - ( pHeight + notifSpacing ) )
-                    topPanel._targetX = notifX
-                    topPanel._targetY = notifY
                     topPanel:Show()
                     topPanel._hidden = false
                     topPanel:CustomAlphaTo( self._targetAlpha, 0.5 )
@@ -282,78 +270,65 @@ local function addNotifHooks( panel, popupID )
     end
 end
 
-local function wrapText( text, maxWidth, labelWidth )
-    local length = text:len()
-    local newText = ""
+-- Yoinked and modified from https://github.com/FPtje/DarkRP/blob/master/gamemode/modules/base/cl_util.lua1
+local function charWrap( text, remainingWidth, maxWidth )
+    local totalWidth = 0
 
-    if text:find( "\n" ) then
-        local lines = text:Split( "\n" )
-        local biggestLength = 0
-        local lengths = {}
+    text = text:gsub( ".", function( char )
+        local charW = surface.GetTextSize( char )
+        totalWidth = totalWidth + charW
 
-        for _, line in pairs( lines ) do
-            local len = line:len()
-            table.insert( lengths, len )
-
-            if len > biggestLength then
-                biggestLength = len
-            end
+        -- Wrap around when the max width is reached
+        if totalWidth >= remainingWidth then
+            -- totalWidth needs to include the character width because it's inserted in a new line
+            totalWidth = charW
+            remainingWidth = maxWidth
+            return "\n" .. char
         end
 
-        local charWidth = labelWidth / biggestLength
-        local chunkLength = math.floor( maxWidth / charWidth )
+        return char
+    end)
 
-        for i, line in pairs( lines ) do
-            local len = lengths[i]
-
-            if len > chunkLength then
-                local index = 1
-
-                while index <= length do
-                    newText = newText .. line:sub( index, math.min( index + chunkLength - 1, len ) ) .. "\n"
-                    index = index + chunkLength
-                end
-            else
-                newText = newText .. line .. "\n"
-            end
-        end
-    else
-        local charWidth = labelWidth / length
-        local chunkLength = math.floor( maxWidth / charWidth )
-        local index = 1
-
-        while index <= length do
-            newText = newText .. text:sub( index, math.min( index + chunkLength - 1, length ) ) .. "\n"
-            index = index + chunkLength
-        end
-    end
-
-    newText = newText:Trim( "\n" )
-
-    return newText
+    return text, totalWidth
 end
 
-local function checkText( canvas, text )
-    local maxWidth = CFCNotifications.getSetting( "size_x" ) - 10 --Get client's width setting and account for textbox position
+local function textWrap( text, font, maxWidth )
+    local totalWidth = 0
 
-    local label = Label( text, canvas )
-    label:SetFont( "CFC_Notifications_Big" )
+    surface.SetFont( font )
 
-    if text ~= "" then
-        local labelWidth, _ = label:GetTextSize()
-
-        if labelWidth > maxWidth then
-            text = wrapText( text, maxWidth, labelWidth )
-            label:SetText( text )
+    local spaceWidth, lineHeight = surface.GetTextSize( " " )
+    text = text:gsub( "(%s?[%S]+)", function( word )
+        local char = string.sub( word, 1, 1 )
+        if char == "\n" or char == "\t" then
+            totalWidth = 0
         end
-    end
 
-    label:SetTextColor( Color( 0, 0, 0, 0 ) ) --Since :Remove() applies on the next frame
-    label:SizeToContents()
-    local _, height = label:GetSize()
-    label:Remove()
+        local wordlen = surface.GetTextSize( word )
+        totalWidth = totalWidth + wordlen
 
-    return text, height
+        -- Wrap around when the max width is reached
+        if wordlen >= maxWidth then -- Split the word if the word is too big
+            local splitWord, splitPoint = charWrap( word, maxWidth - ( totalWidth - wordlen ), maxWidth )
+            totalWidth = splitPoint
+            return splitWord
+        elseif totalWidth < maxWidth then
+            return word
+        end
+
+        -- Split before the word
+        if char == " " then
+            totalWidth = wordlen - spaceWidth
+            return "\n" .. string.sub( word, 2 )
+        end
+
+        totalWidth = wordlen
+        return "\n" .. word
+    end )
+
+    local _, count = text:gsub( "\n", "" )
+
+    return text, ( count + 1 ) * lineHeight
 end
 
 function CFCNotifications._removePopupByID( id )
@@ -418,7 +393,7 @@ function CFCNotifications._addNewPopup( notif )
     local panel = vgui.Create( "DNotification", CFCNotifications.container )
     panel:SetSize( pWidth, 1 )
 
-    local text, pHeight = checkText( panel:GetCanvas(), notif:GetText() )
+    local text, pHeight = textWrap( notif:GetText(), "CFC_Notifications_Big", CFCNotifications.getSetting( "size_x" ) - 10 )
     local heightOffset = 50 + notif:GetExtraHeight()
 
     pHeight = math.max( pHeight + heightOffset, 100 )
@@ -465,7 +440,7 @@ function CFCNotifications._addNewPopup( notif )
         -- move all above panels up one
         for k = idx + 1, #CFCNotifications._popups do
             local cPanel = CFCNotifications._popups[k].panel
-                cPanel._targetY = cPanel._targetY - ( pHeight + notifSpacing )
+            cPanel._targetY = cPanel._targetY - ( pHeight + notifSpacing )
         end
 
         -- Hide the top panel if it exists
@@ -473,7 +448,7 @@ function CFCNotifications._addNewPopup( notif )
         if topPanelData then
             local topPanel = topPanelData.panel
             topPanel._hidden = true
-            topPanel:CustomAlphaTo( 0, 0.5, 0, function()
+            topPanel:CustomAlphaTo( 0, 0.5, function()
                 topPanel:Hide()
             end )
         end
