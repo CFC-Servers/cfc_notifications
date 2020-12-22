@@ -170,9 +170,9 @@ hook.Add( "CFC_Notifications_stop", "render_stop", function()
 end )
 
 local function addData( data )
-    local p = data.notification:GetPriority()
+    local p = data.priority
     for k, v in ipairs( CFCNotifications._popups ) do
-        if v.notification:GetPriority() <= p then
+        if v.priority <= p then
             return table.insert( CFCNotifications._popups, k, data )
         end
     end
@@ -419,6 +419,7 @@ function CFCNotifications._addNewPopup( notif )
     local data = {
         panel = panel,
         notification = notif,
+        priority = priority,
         popupID = id,
     }
 
@@ -433,16 +434,20 @@ function CFCNotifications._addNewPopup( notif )
     panel.data = data
     notif:PopulatePanel( panel:GetCanvas(), id, panel )
     local maxNotif = CFCNotifications.getSetting( "max_notifications" )
-    if idx > maxNotif then
+
+    local dontShow = idx > maxNotif
+    if dontShow then
         panel:Hide()
         panel:SetAlpha( 0 )
-    else
-        -- move all above panels up one
-        for k = idx + 1, #CFCNotifications._popups do
-            local cPanel = CFCNotifications._popups[k].panel
-            cPanel._targetY = cPanel._targetY - ( pHeight + notifSpacing )
-        end
+    end
 
+    -- move all above panels up one
+    for k = idx + 1, #CFCNotifications._popups do
+        local cPanel = CFCNotifications._popups[k].panel
+        cPanel._targetY = cPanel._targetY - ( pHeight + notifSpacing )
+    end
+
+    if not dontShow then
         -- Hide the top panel if it exists
         local topPanelData = CFCNotifications._popups[maxNotif + 1]
         if topPanelData then
@@ -452,22 +457,22 @@ function CFCNotifications._addNewPopup( notif )
                 topPanel:Hide()
             end )
         end
-
-        -- slide self in left
-        local notifX = CFCNotifications.container:GetWide()
-        local notifY
-
-        if idx > 1 then
-            local panelBelow = CFCNotifications._popups[idx - 1].panel
-            notifY = panelBelow._targetY - pHeight - notifSpacing
-        else
-            notifY = CFCNotifications.getSetting( "start_y_fraction" ) * ScrH() - pHeight - notifSpacing
-        end
-
-        panel:SetPos( notifX, notifY )
-        panel._targetX = 0
-        panel._targetY = notifY
     end
+
+    -- slide self in left
+    local notifX = dontShow and 0 or CFCNotifications.container:GetWide()
+    local notifY
+
+    if idx > 1 then
+        local panelBelow = CFCNotifications._popups[idx - 1].panel
+        notifY = panelBelow._targetY - pHeight - notifSpacing
+    else
+        notifY = CFCNotifications.getSetting( "start_y_fraction" ) * ScrH() - pHeight - notifSpacing
+    end
+
+    panel:SetPos( notifX, notifY )
+    panel._targetX = 0
+    panel._targetY = notifY
 
     notif:_callHook( id, "OnOpen", id )
 
