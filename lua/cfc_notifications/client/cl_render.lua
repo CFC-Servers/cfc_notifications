@@ -287,7 +287,7 @@ local function charWrap( text, remainingWidth, maxWidth )
         end
 
         return char
-    end)
+    end )
 
     return text, totalWidth
 end
