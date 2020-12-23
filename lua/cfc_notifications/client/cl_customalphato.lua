@@ -7,26 +7,32 @@ hook.Add( "Think", "CustomAlphaTo_SetAlpha", function()
     local k = 1
     while k <= #fadePanels do
         local v = fadePanels[k]
-        if v:IsVisible() then
+        local panelValid = v:IsValid() and tobool( v._ca_timeStart )
+
+        if panelValid and v:IsVisible() then
             local lerpVal = math.Clamp( ( sTime - v._ca_timeStart ) / ( v._ca_timeEnd - v._ca_timeStart ), 0, 1 )
             local newAlpha = Lerp( lerpVal, v._ca_startAlpha, v._ca_endAlpha )
 
             v:SetAlpha( newAlpha )
 
             if lerpVal == 1 then
-                table.remove( fadePanels, k )
-                if v._ca_callback then
-                    v:_ca_callback()
-                end
-                v._ca_timeStart = nil
-                v._ca_timeEnd = nil
-                v._ca_startAlpha = nil
-                v._ca_endAlpha = nil
-                v._ca_callback = nil
-                k = k - 1
+                panelValid = false
             end
         end
-        k = k + 1
+
+        if not panelValid then
+            table.remove( fadePanels, k )
+            if v._ca_callback then
+                v:_ca_callback()
+            end
+            v._ca_timeStart = nil
+            v._ca_timeEnd = nil
+            v._ca_startAlpha = nil
+            v._ca_endAlpha = nil
+            v._ca_callback = nil
+        else
+            k = k + 1
+        end
     end
 end )
 
