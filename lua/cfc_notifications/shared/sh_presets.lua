@@ -23,8 +23,9 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
     -- These require player input, so are more important than other notifications
     CONTEXT._priority = CFCNotifications.PRIORITY_NORMAL
 
-    local btnH = 30
+    local btnH = 45
     local btnBottomMargin = 10
+
     CONTEXT:SetExtraHeight( btnH + btnBottomMargin - 20 )
 
     function CONTEXT:_addDefaultButtons()
@@ -34,6 +35,7 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
 
     function CONTEXT:AddButton( text, col, ... )
         col = col or Color( 255, 255, 255 )
+        self._curRowSize = ( self._curRowSize or 0 ) + 1
         self._buttons = self._buttons or {}
 
         table.insert( self._buttons, {
@@ -41,6 +43,18 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
             color = col,
             data = { ... }
         } )
+    end
+
+    function CONTEXT:NewButtonRow()
+        if table.IsEmpty( self._buttons ) then return end
+        if self._curRowSize < 1 then return end
+
+        self._buttons[#self._buttons].startNewRow = true
+        self._rowSizes = self._rowSizes or {}
+        table.insert( self._rowSizes, self._curRowSize )
+        self._curRowSize = 0
+
+        self:SetExtraHeight( btnH * ( #self._rowSizes + 1 ) + btnBottomMargin - 20 )
     end
 
     function CONTEXT:OnAltNum( key )
@@ -64,15 +78,22 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
             self:_addDefaultButtons()
         end
 
+        if self._curRowSize > 0 then
+            self._rowSizes = self._rowSizes or {}
+            table.insert( self._rowSizes, self._curRowSize )
+        end
+
         local w, h = canvas:GetSize()
+        local btnRow = 1
+        local btnCol = 1
         local btnGap = 20
-        local btnTotalW = ( w / #self._buttons )
+        local btnTotalW = ( w / self._rowSizes[btnRow] )
 
         local btnW = btnTotalW - btnGap
-        local btnY = h - ( btnH + btnBottomMargin )
+        local btnY = h - ( btnH * #self._rowSizes + btnBottomMargin )
 
         local btns = {}
-        for k, btnData in ipairs( self._buttons ) do
+        for _, btnData in ipairs( self._buttons ) do
             local btn = vgui.Create( "DNotificationButton", canvas )
             btn:SetText( btnData.text )
             btn:SetFont( "CFC_Notifications_Big" )
@@ -98,60 +119,20 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
             end
 
             btn:SetSize( btnW, btnH )
-            btn:SetPos( 10 + ( k - 1 ) * btnTotalW, btnY )
+            btn:SetPos( 10 + ( btnCol - 1 ) * btnTotalW, btnY )
             table.insert( btns, btn )
+
+            if btnData.startNewRow then
+                btnRow = btnRow + 1
+                btnCol = 1
+                btnTotalW = ( w / self._rowSizes[btnRow] )
+                btnW = btnTotalW - btnGap
+                btnY = btnY + btnH
+            else
+                btnCol = btnCol + 1
+            end
         end
 
         self._btns = btns
     end
 end )
-
-CFCNotifications.registerNotificationType( "TextAcknowledge", function( CONTEXT )
-    local oldPopulate = CONTEXT.PopulatePanel
-    function CONTEXT:OnButtonPressed_Client( ignore )
-        if ignore then
-            self:Ignore( true )
-        end
-    end
-    CONTEXT._priority = CFCNotifications.PRIORITY_LOW
-
-    CONTEXT:AddButton( "Okay!", Color( 0, 255, 0 ), false )
-    CONTEXT:AddButton( "Never show again", Color( 255, 255, 255 ), true )
-    function CONTEXT:PopulatePanel( canvas, popupID, panel )
-        panel._unhoverTime = SysTime() + 1
-        local oldThink = panel.Think
-
-        function panel:Think()
-            local x, y = self:LocalCursorPos()
-            local w, h = self:GetSize()
-
-            self._hovered = not ( x < 0 or x > w or y < 0 or y > h )
-            if self._hovered ~= self._lastHovered then
-                if self._hovered then
-                    self._targetAlpha = 255
-
-                    if not self._hidden then
-                        self:CustomAlphaTo( self._targetAlpha, 0.1 )
-                    end
-                else
-                    self._unhoverTime = SysTime()
-                end
-            end
-
-            if not self._hovered and self._unhoverTime and SysTime() - self._unhoverTime > 1 then
-                self._unhoverTime = nil
-                self._targetAlpha = 100
-
-                if not self._hidden then
-                    self:CustomAlphaTo( self._targetAlpha, 0.5 )
-                end
-            end
-
-            panel._lastHovered = panel._hovered
-
-            oldThink( self )
-        end
-
-        oldPopulate( self, canvas, popupID, panel )
-    end
-end, "Buttons" )
