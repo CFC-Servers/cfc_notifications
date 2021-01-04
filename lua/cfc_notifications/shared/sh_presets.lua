@@ -125,7 +125,7 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
             if btnData.startNewRow then
                 btnRow = btnRow + 1
                 btnCol = 1
-                btnTotalW = ( w / self._rowSizes[btnRow] )
+                btnTotalW = ( w / ( self._rowSizes[btnRow] or 1 ) )
                 btnW = btnTotalW - btnGap
                 btnY = btnY + btnH
             else
