@@ -8,6 +8,10 @@ CFCNotifications.PRIORITY_NORMAL = 3
 CFCNotifications.PRIORITY_HIGH = 4
 CFCNotifications.PRIORITY_MAX = 5
 
+CFCNotifications.ALIGN_LEFT = 1
+CFCNotifications.ALIGN_CENTER = 2
+CFCNotifications.ALIGN_RIGHT = 3
+
 -- naming convention:
 -- camelCase for methods on CFCNotifications
 -- UpperCamelCase for methods on a Notification object ( CONTEXT )

@@ -33,16 +33,22 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
         self:AddButton( "No", Color( 255, 0, 0 ), false )
     end
 
-    function CONTEXT:AddButton( text, col, ... )
+    function CONTEXT:AddButtonAligned( text, col, alignment, ... )
         col = col or Color( 255, 255, 255 )
+        alignment = alignment or CFCNotifications.ALIGN_CENTER
         self._curRowSize = ( self._curRowSize or 0 ) + 1
         self._buttons = self._buttons or {}
 
         table.insert( self._buttons, {
             text = text,
             color = col,
+            alignment = alignment,
             data = { ... }
         } )
+    end
+
+    function CONTEXT:AddButton( text, col, ... )
+        self:AddButtonAligned( text, col, CFCNotifications.ALIGN_CENTER, ... )
     end
 
     function CONTEXT:NewButtonRow()
@@ -99,6 +105,7 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
             btn:SetFont( "CFC_Notifications_Big" )
             btn:SetTextColor( btnData.color )
             btn:SetUnderlineWeight( 2 )
+            btn:SetAlignment( btnData.alignment )
 
             function btn:DoClick()
                 if panel:GetButtonsDisabled() then return end

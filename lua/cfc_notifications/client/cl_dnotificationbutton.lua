@@ -16,6 +16,7 @@ function PANEL:Init()
     self.clickAnimationLength = 1
     self.clickAnimState = 0
     self.text = ""
+    self.alignment = CFCNotifications.ALIGN_CENTER
     self:SetTextColor( Color( 255, 255, 255 ) )
     self:SetBackgroundColor( Color( 100, 100, 100 ) )
     _R.Panel.SetText( self, "" ) -- Hide the default panel text since we track and draw the text ourselves
@@ -58,13 +59,27 @@ function PANEL:SetText( text )
     self.text = string.Trim( text, "\n" )
 end
 
-function PANEL:GetText( text )
+function PANEL:GetText()
     return self.text
 end
 
 function PANEL:SetTextColor( textColor )
     self.BaseClass.SetTextColor( self, textColor )
     self.textColor = textColor
+end
+
+local function isAlignmentValid( alignment )
+    if alignment == CFCNotifications.ALIGN_LEFT then return true end
+    if alignment == CFCNotifications.ALIGN_CENTER then return true end
+    if alignment == CFCNotifications.ALIGN_RIGHT then return true end
+
+    return false
+end
+
+function PANEL:SetAlignment( alignment )
+    if not isAlignmentValid( alignment ) then return end
+
+    self.alignment = alignment
 end
 
 function PANEL:Paint( w, h )
@@ -111,7 +126,7 @@ function PANEL:Paint( w, h )
     surface.SetDrawColor( self.textColor )
     surface.DrawRect( halfWidth * inverseProg, barHeight, w * prog, uWeight )
 
-    -- Draw centered multiline text
+    -- Draw aligned multiline text
     surface.SetFont( self:GetFont() )
     surface.SetTextColor( self:GetTextColor() )
 
@@ -119,11 +134,26 @@ function PANEL:Paint( w, h )
     local numLines = #lines
     local _, textH = surface.GetTextSize( "|" )
     local textYStart = h / 2 - numLines * textH / 2
+    local textXStart
+    local textXMult
+
+    if self.alignment == CFCNotifications.ALIGN_LEFT then
+        textXStart = 0
+        textXMult = 0
+    elseif self.alignment == CFCNotifications.ALIGN_RIGHT then
+        textXStart = w
+        textXMult = -1
+    else
+        textXStart = halfWidth
+        textXMult = -0.5
+    end
 
     for k, line in pairs( lines ) do
         local textW = surface.GetTextSize( line )
+        local textX = textXStart + textW * textXMult
+        local textY = textYStart + ( k - 1 ) * textH
 
-        surface.SetTextPos( halfWidth - textW / 2, textYStart + ( k - 1 ) * textH )
+        surface.SetTextPos( textX, textY )
         surface.DrawText( line )
     end
 end
