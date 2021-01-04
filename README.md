@@ -128,10 +128,12 @@ Below are the predefined notification types (you can define your own) with whate
   - `notification:SetText( text )` - Sets the text for `notification`
   - `notification:SetTextColor( color )` - Sets the text color for `notification`
   - `notification:SetExtraHeight()` - Sets additional height for `notification`
-    Defauts to 40 to give room for the buttons.
+    Defauts to 35 (plus 45 for each additional row) to give room for the buttons.
   - `notification:AddButton( text, buttonColor, data1, data2, ... )`  
     Adds a button with given text and color. The button text, underline and click animation will be `buttonColor`. `data1, data2, ...` will be passed to OnButtonPressed when the respective button is pressed. If not defined, `text` will be used instead.
-    If this function is never called, the notification will default to a green "Yes" and red "No" button
+    If this function is never called, the notification will default to a green "Yes" and red "No" button.
+  - `notification:NewButtonRow()`
+    Any buttons created from here on will start on a new row.
   - Hooks:
     - `notification:OnButtonPressed( data )`  
       - Called when a button is pressed with the data used to create it.
