@@ -132,6 +132,12 @@ Below are the predefined notification types (you can define your own) with whate
   - `notification:AddButton( text, buttonColor, data1, data2, ... )`  
     Adds a button with given text and color. The button text, underline and click animation will be `buttonColor`. `data1, data2, ...` will be passed to OnButtonPressed when the respective button is pressed. If not defined, `text` will be used instead.
     If this function is never called, the notification will default to a green "Yes" and red "No" button.
+    There is enough vertical height in each button to fit at most two lines of text.
+  - `notification:AddButtonAligned( text, buttonColor, alignment, data1, data2, ... )`
+    Adds a button with horizontal text alignment, using the constants below.
+    - `CFCNotifications.ALIGN_LEFT`
+    - `CFCNotifications.ALIGN_CENTER`
+    - `CFCNotifications.ALIGN_RIGHT`
   - `notification:NewButtonRow()`
     Any buttons created from here on will start on a new row.
   - Hooks:
