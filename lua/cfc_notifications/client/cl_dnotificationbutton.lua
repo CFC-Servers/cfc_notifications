@@ -15,8 +15,10 @@ function PANEL:Init()
     self.underlineWeight = 1
     self.clickAnimationLength = 1
     self.clickAnimState = 0
+    self.text = ""
     self:SetTextColor( Color( 255, 255, 255 ) )
     self:SetBackgroundColor( Color( 100, 100, 100 ) )
+    _R.Panel.SetText( self, "" ) -- Hide the default panel text since we track and draw the text ourselves
 end
 
 function PANEL:Think()
@@ -49,6 +51,15 @@ function PANEL:Think()
             self.clickAnimState = 0
         end
     end
+end
+
+-- The base DButton class doesn't support text alignment, so we don't let it draw anything, and store the text ourself
+function PANEL:SetText( text )
+    self.text = string.Trim( text, "\n" )
+end
+
+function PANEL:GetText( text )
+    return self.text
 end
 
 function PANEL:SetTextColor( textColor )
@@ -99,6 +110,22 @@ function PANEL:Paint( w, h )
     -- Underline foreground
     surface.SetDrawColor( self.textColor )
     surface.DrawRect( halfWidth * inverseProg, barHeight, w * prog, uWeight )
+
+    -- Draw centered multiline text
+    surface.SetFont( self:GetFont() )
+    surface.SetTextColor( self:GetTextColor() )
+
+    local lines = string.Explode( "\n", self:GetText() )
+    local numLines = #lines
+    local _, textH = surface.GetTextSize( "|" )
+    local textYStart = h / 2 - numLines * textH / 2
+
+    for k, line in pairs( lines ) do
+        local textW = surface.GetTextSize( line )
+
+        surface.SetTextPos( halfWidth - textW / 2, textYStart + ( k - 1 ) * textH )
+        surface.DrawText( line )
+    end
 end
 
 function PANEL:SetUnderlineWeight( w )
