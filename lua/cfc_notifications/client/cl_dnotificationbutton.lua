@@ -19,7 +19,7 @@ function PANEL:Init()
     self.alignment = CFCNotifications.ALIGN_CENTER
     self:SetTextColor( Color( 255, 255, 255 ) )
     self:SetBackgroundColor( Color( 100, 100, 100 ) )
-    _R.Panel.SetText( self, "" ) -- Hide the default panel text since we track and draw the text ourselves
+    self.BaseClass.SetText( self, "" ) -- Hide the default panel text since we track and draw the text ourselves
 end
 
 function PANEL:Think()
