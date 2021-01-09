@@ -23,7 +23,7 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
     -- These require player input, so are more important than other notifications
     CONTEXT._priority = CFCNotifications.PRIORITY_NORMAL
 
-    local btnH = 45
+    local btnH = 50
     local btnBottomMargin = 10
 
     CONTEXT:SetExtraHeight( btnH + btnBottomMargin - 20 )
