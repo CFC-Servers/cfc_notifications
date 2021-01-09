@@ -77,7 +77,11 @@ local function isAlignmentValid( alignment )
 end
 
 function PANEL:SetAlignment( alignment )
-    if not isAlignmentValid( alignment ) then return end
+    if not isAlignmentValid( alignment ) then
+        error( "Invalid alignment type! Please use the ALIGN constants in CFCNotifications." )
+
+        return
+    end
 
     self.alignment = alignment
 end
