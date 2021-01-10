@@ -1,3 +1,11 @@
+local function isAlignmentValid( alignment )
+    if alignment == CFCNotifications.ALIGN_LEFT then return true end
+    if alignment == CFCNotifications.ALIGN_CENTER then return true end
+    if alignment == CFCNotifications.ALIGN_RIGHT then return true end
+
+    return false
+end
+
 -- Simple label
 CFCNotifications.registerNotificationType( "Text", function( CONTEXT )
     CFCNotifications.contextHelpers.addField( CONTEXT, "text", "", "string" )
@@ -34,8 +42,13 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
     end
 
     function CONTEXT:AddButtonAligned( text, col, alignment, ... )
+        if not isAlignmentValid( alignment ) then
+            error( "Invalid alignment! Please use the ALIGN constants in CFCNotifications." )
+
+            return
+        end
+
         col = col or Color( 255, 255, 255 )
-        alignment = alignment or CFCNotifications.ALIGN_CENTER
         self._curRowSize = ( self._curRowSize or 0 ) + 1
         self._buttons = self._buttons or {}
 
