@@ -138,8 +138,10 @@ Below are the predefined notification types (you can define your own) with whate
     - `CFCNotifications.ALIGN_LEFT`
     - `CFCNotifications.ALIGN_CENTER`
     - `CFCNotifications.ALIGN_RIGHT`
+  - `notification:AddButtonIndexed( text, buttonColor, alignment, buttonRow, buttonColumn, data1, data2, ... )`
+    Adds or inserts a button at the specified row and column, with the given horizontal text alignment. If used to insert, this will push all buttons in its row at its column and beyond to the right. If you only wish to add to the end of the last row, it is recommended to use `AddButtion()` or `AddButtonAligned()`.
   - `notification:NewButtonRow()`
-    Any buttons created from here on will start on a new row.
+    Any buttons created from here on will start on a new row. Newer rows appear towards the bottom of the notifiation. This function is not necessary if `AddButtonIndexed()` is being used, as it automatically creates new rows as needed, and it specifies where to add the button.
   - Hooks:
     - `notification:OnButtonPressed( data )`  
       - Called when a button is pressed with the data used to create it.
