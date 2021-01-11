@@ -33,6 +33,7 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
 
     local btnH = 50
     local btnBottomMargin = 10
+    local btnGap = 20
 
     CONTEXT:SetExtraHeight( btnH + btnBottomMargin - 20 )
 
@@ -41,39 +42,93 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
         self:AddButton( "No", Color( 255, 0, 0 ), false )
     end
 
-    function CONTEXT:AddButtonAligned( text, col, alignment, ... )
+    function CONTEXT:AddButtonIndexed( text, color, alignment, row, col, ... )
+        -- Need to error if color is not valid
+
         if not isAlignmentValid( alignment ) then
             error( "Invalid alignment! Please use the ALIGN constants in CFCNotifications." )
 
             return
         end
 
-        col = col or Color( 255, 255, 255 )
-        self._curRowSize = ( self._curRowSize or 0 ) + 1
-        self._buttons = self._buttons or {}
+        -- Need to see if there is a built-in for determining if a number is an integer or not
+        if not row or row < 1 or math.floor( row ) ~= row then
+            error( "Invalid row! Rows must be a positive integer." )
 
-        table.insert( self._buttons, {
+            return
+        end
+
+        -- Need to see if there is a built-in for determining if a number is an integer or not
+        if not col or col < 1 or math.floor( col ) ~= col then
+            error( "Invalid column! Columns must be a positive integer." )
+
+            return
+        end
+
+        self._buttons = self._buttons or { {} }
+        local numRows = #self._buttons
+
+        if row > numRows + 1 or ( row > numRows and table.IsEmpty( self._buttons[numRows] ) ) then
+            error( "Invalid row! Cannot skip over unused row indeces." )
+
+            return
+        end
+
+        -- numCols is 0 if the current row is empty
+        local numCols = math.max( #self._buttons[row], 1 )
+
+        if col > numCols + 1 or ( col > numCols and table.IsEmpty( self._buttons[numCols] ) ) then
+            error( "Invalid column! Cannot skip over unused column indeces." )
+
+            return
+        end
+
+        if row > numRows then
+            self:NewButtonRow()
+        end
+
+        local button = {
             text = text,
-            color = col,
+            color = color,
             alignment = alignment,
             data = { ... }
-        } )
+        }
+
+        if self._buttons[row][col] and table.IsEmpty( self._buttons[row][col] ) then
+            self._buttons[row][col] = button
+        else
+            table.insert( self._buttons[row], col, button )
+        end
     end
 
-    function CONTEXT:AddButton( text, col, ... )
-        self:AddButtonAligned( text, col, CFCNotifications.ALIGN_CENTER, ... )
+    function CONTEXT:AddButtonAligned( text, color, alignment, ... )
+        self._buttons = self._buttons or { {} }
+        local row = #self._buttons
+        local col = #self._buttons[row] + 1
+
+        self:AddButtonIndexed( text, color, alignment, row, col, ... )
+    end
+
+    function CONTEXT:AddButton( text, color, ... )
+        self._buttons = self._buttons or { {} }
+        local row = #self._buttons
+        local col = #self._buttons[row] + 1
+
+        self:AddButtonIndexed( text, color, CFCNotifications.ALIGN_CENTER, row, col, ... )
     end
 
     function CONTEXT:NewButtonRow()
-        if table.IsEmpty( self._buttons ) then return end
-        if self._curRowSize < 1 then return end
+        if table.IsEmpty( self._buttons ) or table.IsEmpty( self._buttons[#self._buttons] ) then
+            error( "Could not create a new row! The current row is empty!" )
 
-        self._buttons[#self._buttons].startNewRow = true
-        self._rowSizes = self._rowSizes or {}
-        table.insert( self._rowSizes, self._curRowSize )
-        self._curRowSize = 0
+            return
+        end
 
-        self:SetExtraHeight( btnH * ( #self._rowSizes + 1 ) + btnBottomMargin - 20 )
+        local numRows = #self._buttons + 1
+
+        table.insert( self._buttons, numRows, {} )
+
+        self:SetExtraHeight( btnH * numRows + btnBottomMargin - 20 )
     end
 
     function CONTEXT:OnAltNum( key )
@@ -86,71 +141,65 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
     end
 
     function CONTEXT:PopulatePanel( canvas, popupID, panel )
+        if not self._buttons then
+            self:_addDefaultButtons()
+        end
+
+        local numRows = #self._buttons
+
+        if table.IsEmpty( self._buttons[numRows] ) then
+            self._buttons[numRows] = nil
+            numRows = numRows - 1
+            self:SetExtraHeight( btnH * numRows + btnBottomMargin - 20 )
+        end
+
         local label = Label( self:GetText(), canvas )
         label:SetFont( "CFC_Notifications_Big" )
         label:SizeToContents()
         label:SetTextColor( self:GetTextColor() )
 
         local this = self
-
-        if not self._buttons then
-            self:_addDefaultButtons()
-        end
-
-        if self._curRowSize > 0 then
-            self._rowSizes = self._rowSizes or {}
-            table.insert( self._rowSizes, self._curRowSize )
-        end
-
-        local w, h = canvas:GetSize()
-        local btnRow = 1
-        local btnCol = 1
-        local btnGap = 20
-        local btnTotalW = ( w / self._rowSizes[btnRow] )
-
-        local btnW = btnTotalW - btnGap
-        local btnY = h - ( btnH * #self._rowSizes + btnBottomMargin )
-
         local btns = {}
-        for _, btnData in ipairs( self._buttons ) do
-            local btn = vgui.Create( "DNotificationButton", canvas )
-            btn:SetText( btnData.text )
-            btn:SetFont( "CFC_Notifications_Big" )
-            btn:SetTextColor( btnData.color )
-            btn:SetUnderlineWeight( 2 )
-            btn:SetAlignment( btnData.alignment )
+        local w, h = canvas:GetSize()
 
-            function btn:DoClick()
-                if panel:GetButtonsDisabled() then return end
+        local btnY = h - ( btnH * numRows + btnBottomMargin )
 
-                panel:SetButtonsDisabled( true )
+        for r, row in ipairs( self._buttons ) do
+            local btnTotalW = w / ( #self._buttons[r] or 1 )
+            local btnW = btnTotalW - btnGap
 
-                for _, v in pairs( btns ) do
-                    if v ~= self then
-                        v:SetDisabled( true )
+            for c, btnData in ipairs( row ) do
+                local btn = vgui.Create( "DNotificationButton", canvas )
+                btn:SetText( btnData.text )
+                btn:SetFont( "CFC_Notifications_Big" )
+                btn:SetTextColor( btnData.color )
+                btn:SetUnderlineWeight( 2 )
+                btn:SetAlignment( btnData.alignment )
+
+                function btn:DoClick()
+                    if panel:GetButtonsDisabled() then return end
+
+                    panel:SetButtonsDisabled( true )
+
+                    for _, v in pairs( btns ) do
+                        if v ~= self then
+                            v:SetDisabled( true )
+                        end
                     end
+
+                    -- Delay the close to see the button animation, make it clear that the button is what was selected
+                    timer.Simple( 0.5, function()
+                        CFCNotifications._removePopup( panel )
+                        this:_callHook( popupID, "OnButtonPressed", unpack( btnData.data or { btnData.text } ) )
+                    end )
                 end
 
-                -- Delay the close to see the button animation, make it clear that the button is what was selected
-                timer.Simple( 0.5, function()
-                    CFCNotifications._removePopup( panel )
-                    this:_callHook( popupID, "OnButtonPressed", unpack( btnData.data or { btnData.text } ) )
-                end )
+                btn:SetSize( btnW, btnH )
+                btn:SetPos( 10 + ( c - 1 ) * btnTotalW, btnY )
+                table.insert( btns, btn )
             end
 
-            btn:SetSize( btnW, btnH )
-            btn:SetPos( 10 + ( btnCol - 1 ) * btnTotalW, btnY )
-            table.insert( btns, btn )
-
-            if btnData.startNewRow then
-                btnRow = btnRow + 1
-                btnCol = 1
-                btnTotalW = ( w / ( self._rowSizes[btnRow] or 1 ) )
-                btnW = btnTotalW - btnGap
-                btnY = btnY + btnH
-            else
-                btnCol = btnCol + 1
-            end
+            btnY = btnY + btnH
         end
 
         self._btns = btns
