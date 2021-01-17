@@ -205,7 +205,6 @@ function CONTEXT:_callHook( popupID, hookName, ... )
 
                 net.Start( "CFC_NotificationEvent" )
                 net.WriteString( self:GetID() )
-                net.WriteUInt( popupID, 16 )
                 net.WriteString( hookName )
                 net.WriteTable( args )
                 net.Send( args[5] )

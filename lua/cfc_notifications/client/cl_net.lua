@@ -31,7 +31,6 @@ end )
 
 net.Receive( "CFC_NotificationEvent", function( len )
     local id = net.ReadString()
-    local popupID = net.ReadUInt( 16 )
     local funcName = net.ReadString()
     local data = net.ReadTable()
 
