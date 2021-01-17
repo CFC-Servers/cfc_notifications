@@ -65,6 +65,7 @@ function CONTEXT:Send( filter )
             return -- or maybe error?
         end
         CFCNotifications._sendClients( players, self )
+        self._sent = true
     else
         -- Lets not pop up the same notification more than once
         if not self:GetAllowMultiple() and self:IsNotificationShowing( self ) then
@@ -76,6 +77,7 @@ function CONTEXT:Send( filter )
             return
         end
 
+        self._sent = true
         return CFCNotifications._addNewPopup( self )
     end
 end
@@ -197,6 +199,17 @@ function CONTEXT:_callHook( popupID, hookName, ... )
         if self[hookName] then
             self:SetCallingPopupID( popupID )
             self[hookName]( self, ... )
+
+            if SERVER and hookName == "_EditButtonAttribute" then
+                local args = { ... }
+
+                net.Start( "CFC_NotificationEvent" )
+                net.WriteString( self:GetID() )
+                net.WriteUInt( popupID, 16 )
+                net.WriteString( hookName )
+                net.WriteTable( args )
+                net.Send( args[5] )
+            end
         end
     end
     if self[hookName .. "_Client"] then

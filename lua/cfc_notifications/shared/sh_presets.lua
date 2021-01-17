@@ -1,9 +1,96 @@
+local BUTTON_ATTRIBUTES = {
+    text = "SetText",
+    color = "SetTextColor",
+    alignment = "SetAlignment",
+    location = true,
+}
+
 local function isAlignmentValid( alignment )
     if alignment == CFCNotifications.ALIGN_LEFT then return true end
     if alignment == CFCNotifications.ALIGN_CENTER then return true end
     if alignment == CFCNotifications.ALIGN_RIGHT then return true end
 
     return false
+end
+
+local function isButtonLocationOccupied( context, row, col )
+    if not context._buttons then
+        error( "The notification has no buttons!" )
+
+        return false
+    end
+
+    if not row or row < 1 or math.floor( row ) ~= row then
+        error( "Invalid row! Rows must be a positive integer." )
+
+        return false
+    end
+
+    if not col or col < 1 or math.floor( col ) ~= col then
+        error( "Invalid column! Columns must be a positive integer." )
+
+        return false
+    end
+
+    local rowTable = context._buttons[row] or {}
+
+    if not context._buttons[row] or table.IsEmpty( rowTable ) then
+        error( "Invalid row! The row is either empty or does not exist." )
+
+        return false
+    end
+
+    local colTable = context._buttons[row][col] or {}
+
+    if not context._buttons[row][col] or table.IsEmpty( colTable ) then
+        error( "Invalid column! The column is either empty or does not exist." )
+
+        return false
+    end
+
+    return true
+end
+
+local function canInsertButton( context, row, col )
+    if not row or row < 1 or math.floor( row ) ~= row then
+        error( "Invalid row! Rows must be a positive integer." )
+
+        return false
+    end
+
+    if not col or col < 1 or math.floor( col ) ~= col then
+        error( "Invalid column! Columns must be a positive integer." )
+
+        return false
+    end
+
+    local numRows = #context._buttons
+    local rowTable = context._buttons[numRows] or {}
+
+    if row > numRows + 1 or ( row > numRows and table.IsEmpty( rowTable ) ) then
+        error( "Invalid row! Cannot skip over unused row indeces." )
+
+        return false
+    end
+
+    -- numCols is 0 if the current row is empty
+    local numCols = math.max( #context._buttons[row], 1 )
+
+    if col > numCols + 1 then
+        error( "Invalid column! Cannot skip over unused column indeces." )
+
+        return false
+    end
+
+    return true
+end
+
+local function isAllHumans( plys )
+    for _, ply in pairs( player.GetHumans() ) do
+        if not table.HasValue( plys, ply ) then return false end
+    end
+
+    return true
 end
 
 -- Simple label
@@ -43,7 +130,7 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
     end
 
     function CONTEXT:AddButtonIndexed( text, color, alignment, row, col, ... )
-        -- Need to error if color is not valid
+        color = color or Color( 255, 255, 255 )
 
         if not isAlignmentValid( alignment ) then
             error( "Invalid alignment! Please use the ALIGN constants in CFCNotifications." )
@@ -51,39 +138,11 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
             return
         end
 
-        -- Need to see if there is a built-in for determining if a number is an integer or not
-        if not row or row < 1 or math.floor( row ) ~= row then
-            error( "Invalid row! Rows must be a positive integer." )
-
-            return
-        end
-
-        -- Need to see if there is a built-in for determining if a number is an integer or not
-        if not col or col < 1 or math.floor( col ) ~= col then
-            error( "Invalid column! Columns must be a positive integer." )
-
-            return
-        end
-
         self._buttons = self._buttons or { {} }
-        local numRows = #self._buttons
 
-        if row > numRows + 1 or ( row > numRows and table.IsEmpty( self._buttons[numRows] ) ) then
-            error( "Invalid row! Cannot skip over unused row indeces." )
+        if not canInsertButton( self, row, col ) then return end
 
-            return
-        end
-
-        -- numCols is 0 if the current row is empty
-        local numCols = math.max( #self._buttons[row], 1 )
-
-        if col > numCols + 1 or ( col > numCols and table.IsEmpty( self._buttons[numCols] ) ) then
-            error( "Invalid column! Cannot skip over unused column indeces." )
-
-            return
-        end
-
-        if row > numRows then
+        if row > #self._buttons then
             self:NewButtonRow()
         end
 
@@ -131,11 +190,180 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
         self:SetExtraHeight( btnH * numRows + btnBottomMargin - 20 )
     end
 
+    function CONTEXT:_EditButtonAttribute( attribute, row, col, data, plys, fromNet )
+        if not BUTTON_ATTRIBUTES[attribute] then return end
+
+        if fromNet then -- Notification has already been sent, and is now being edited
+            if not isButtonLocationOccupied( self, row, col ) then return end
+            if SERVER and not isAllHumans( plys ) then return end -- SERVER only edits attribute if plys is equal to all humans
+            if CLIENT and not table.HasValue( plys, LocalPlayer() ) then return end
+
+            if attribute == "location" then
+                if not canInsertButton( self, row, col ) then return end
+
+                local numRows = #self._buttons
+
+                -- Allowing notifications to change height after being sent requires a rework to how they are positioned
+                -- Or it requires screwing with internal functions and data without a rewrite, either way it needs looking into
+                if data.row > numRows then
+                    error( "Cannot add new button rows once a notification has been sent!" )
+
+                    return
+                end
+
+                local button = self._buttons[row][col]
+                table.remove( self._buttons[row], col )
+                local numCols = #self._buttons[data.row]
+
+                if data.col > numCols + 1 then
+                    data.col = numCols + 1
+                end
+
+                table.insert( self._buttons[data.row], data.col, button )
+
+                if SERVER then return end
+
+                local btn = self._btns[row][col]
+                table.remove( self._btns[row], col )
+                table.insert( self._btns[data.row], data.col, btn )
+
+                -- Resize and reposition the buttons in the row that was moved to
+                numCols = numCols + 1
+                local canvas = self._panel:GetCanvas()
+                local w, h = canvas:GetSize()
+
+                local btnY = numRows - data.row + 1
+                btnY = h - ( btnH * btnY + btnBottomMargin )
+
+                local btnTotalW = w / ( numCols or 1 )
+                local btnW = btnTotalW - btnGap
+
+                for c, btn in ipairs( self._btns[data.row] ) do
+                    btn:SetSize( btnW, btnH )
+                    btn:SetPos( 10 + ( c - 1 ) * btnTotalW, btnY )
+                end
+
+                if row == data.row or table.IsEmpty( self._buttons[row] ) then return end
+
+                -- Resize and reposition the buttons in the row that was moved from
+                numCols = #self._buttons[row]
+                btnY = numRows - row + 1
+                btnY = h - ( btnH * btnY + btnBottomMargin )
+
+                btnTotalW = w / ( numCols or 1 )
+                btnW = btnTotalW - btnGap
+
+                for c, btn in ipairs( self._btns[row] ) do
+                    btn:SetSize( btnW, btnH )
+                    btn:SetPos( 10 + ( c - 1 ) * btnTotalW, btnY )
+                end
+            else
+                local funcName = BUTTON_ATTRIBUTES[attribute]
+
+                self._buttons[row][col][attribute] = data
+
+                if SERVER then return end
+
+                self._btns[row][col][funcName]( self._btns[row][col], data )
+            end
+
+            return
+        end
+
+        if self._sent then -- Notification has already been sent
+            if CLIENT then
+                plys = { LocalPlayer() }
+            elseif not plys then
+                plys = player.GetHumans()
+            elseif type( plys ) ~= "table" then
+                if not IsValid( plys ) or not plys:IsPlayer() then
+                    error( "That is not a valid player!" )
+
+                    return
+                end
+
+                plys = { plys }
+            end
+
+            self:_callHook( -1, "_EditButtonAttribute", attribute, row, col, data, plys, true )
+        elseif isButtonLocationOccupied( self, row, col ) then -- Notifications has not already been sent, and button location is valid
+            if attribute == "location" then
+                if not isButtonLocationOccupied( self, data.row, data.col ) then return end
+                if not canInsertButton( self, row, col ) then return end
+
+                local button = self._buttons[row][col]
+
+                table.remove( self._buttons[row], col )
+
+                if table.IsEmpty( self._buttons[row] ) then
+                    table.remove( self._buttons, row )
+                end
+
+                local numRows = #self._buttons
+                local numCols = #self._buttons[data.row]
+
+                if data.row > numRows then
+                    self:NewButtonRow()
+
+                    if data.row > numRows + 1 then -- A gap is created when a button gets pulled out to move to the end
+                        data.row = numRows + 1
+                    end
+                end
+
+                if data.col > numCols + 1 then
+                    data.col = numCols + 1
+                end
+
+                table.insert( self._buttons[data.row], data.col, button )
+            else
+                self._buttons[row][col][attribute] = data
+            end
+        end
+    end
+
+    function CONTEXT:EditButtonText( row, col, text, plys )
+        self:_EditButtonAttribute( "text", row, col, text, plys, false )
+    end
+
+    function CONTEXT:EditButtonColor( row, col, color, plys )
+        self:_EditButtonAttribute( "color", row, col, color, plys, false )
+    end
+
+    function CONTEXT:EditButtonAlignment( row, col, alignment, plys )
+        self:_EditButtonAttribute( "alignment", row, col, alignment, plys, false )
+    end
+
+    function CONTEXT:EditButtonLocation( row, col, newRow, newCol, plys )
+        local data = {
+            row = newRow,
+            col = newCol
+        }
+
+        self:_EditButtonAttribute( "location", row, col, data, plys, false )
+    end
+
     function CONTEXT:OnAltNum( key )
         if key < 1 or key > 9 then return end
-        if self._btns[key] then
-            self._btns[key]:DoClickInternal()
-            self._btns[key]:DoClick()
+
+        local ind = 0
+        local row, col
+
+        for r, btnRow in pairs( self._btns ) do
+            for c, btn in pairs( btnRow ) do
+                ind = ind + 1
+
+                if ind == key then
+                    row = r
+                    col = c
+
+                    break
+                end
+            end
+        end
+
+        if self._btns[row][col] then
+            self._btns[row][col]:DoClickInternal()
+            self._btns[row][col]:DoClick()
             return true
         end
     end
@@ -167,6 +395,7 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
         for r, row in ipairs( self._buttons ) do
             local btnTotalW = w / ( #self._buttons[r] or 1 )
             local btnW = btnTotalW - btnGap
+            table.insert( btns, {} )
 
             for c, btnData in ipairs( row ) do
                 local btn = vgui.Create( "DNotificationButton", canvas )
@@ -182,8 +411,10 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
                     panel:SetButtonsDisabled( true )
 
                     for _, v in pairs( btns ) do
-                        if v ~= self then
-                            v:SetDisabled( true )
+                        for _, v2 in pairs( v ) do
+                            if v2 ~= self then
+                                v2:SetDisabled( true )
+                            end
                         end
                     end
 
@@ -196,13 +427,14 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
 
                 btn:SetSize( btnW, btnH )
                 btn:SetPos( 10 + ( c - 1 ) * btnTotalW, btnY )
-                table.insert( btns, btn )
+                table.insert( btns[r], btn )
             end
 
             btnY = btnY + btnH
         end
 
         self._btns = btns
+        self._panel = panel
     end
 end )
 
