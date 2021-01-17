@@ -5,6 +5,16 @@ local BUTTON_ATTRIBUTES = {
     location = true,
 }
 
+local function disableButtons( notif, btns )
+    for _, v in pairs( btns ) do
+        for _, v2 in pairs( v ) do
+            if v2 ~= notif then
+                v2:SetDisabled( true )
+            end
+        end
+    end
+end
+
 local function isAlignmentValid( alignment )
     if alignment == CFCNotifications.ALIGN_LEFT then return true end
     if alignment == CFCNotifications.ALIGN_CENTER then return true end
@@ -223,9 +233,9 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
 
                 if SERVER then return end
 
-                local btn = self._btns[row][col]
+                local movedBtn = self._btns[row][col]
                 table.remove( self._btns[row], col )
-                table.insert( self._btns[data.row], data.col, btn )
+                table.insert( self._btns[data.row], data.col, movedBtn )
 
                 -- Resize and reposition the buttons in the row that was moved to
                 numCols = numCols + 1
@@ -410,13 +420,7 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
 
                     panel:SetButtonsDisabled( true )
 
-                    for _, v in pairs( btns ) do
-                        for _, v2 in pairs( v ) do
-                            if v2 ~= self then
-                                v2:SetDisabled( true )
-                            end
-                        end
-                    end
+                    disableButtons( self, btns )
 
                     -- Delay the close to see the button animation, make it clear that the button is what was selected
                     timer.Simple( 0.5, function()
