@@ -8,6 +8,7 @@ net.Receive( "CFC_NotificationSend", function( len )
     setmetatable( notif, mt )
 
     notif:Send()
+    notif._sent = true
 end )
 
 CFCNotifications._serverNotificationIDs = {}
@@ -30,6 +31,7 @@ end )
 
 net.Receive( "CFC_NotificationEvent", function( len )
     local id = net.ReadString()
+    local popupID = net.ReadUInt( 16 )
     local funcName = net.ReadString()
     local data = net.ReadTable()
 
@@ -39,6 +41,18 @@ net.Receive( "CFC_NotificationEvent", function( len )
             CFCNotifications._removePopupByID( popupID )
         else
             CFCNotifications._removePopupByNotificationID( id )
+        end
+    else
+        for _, popup in pairs( CFCNotifications._popups ) do
+            local notif = popup.notification
+
+            if notif._id == id then
+                if not notif[funcName] then return end
+
+                notif[funcName]( notif, unpack( data ) )
+
+                break
+            end
         end
     end
 end )

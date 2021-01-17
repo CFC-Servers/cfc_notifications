@@ -142,6 +142,14 @@ Below are the predefined notification types (you can define your own) with whate
     Adds or inserts a button at the specified row and column, with the given horizontal text alignment. If used to insert, this will push all buttons in its row at its column and beyond to the right. If you only wish to add to the end of the last row, it is recommended to use `AddButtion()` or `AddButtonAligned()`.
   - `notification:NewButtonRow()`
     Any buttons created from here on will start on a new row. Newer rows appear towards the bottom of the notifiation. This function is not necessary if `AddButtonIndexed()` is being used, as it automatically creates new rows as needed, and it specifies where to add the button.
+  - `notification:EditButtonText( buttonRow, buttonColumn, text, plys )`
+    Edits the text of a button. Can be called on server or client, and before or after sending `notification`. If called on server, `plys` determines who will see the change, though only if the notification has already been sent. If called on client, only that client will see the change. This behavior is the same for all `EditButton` functions.
+  - `notification:EditButtonColor( buttonRow, buttonColumn, buttonColor, plys )`
+    Edits the color of a button.
+  - `notification:EditButtonAlignment( buttonRow, buttonColumn, alignment, plys )`
+    Edits the alignment of a button.
+  - `notification:EditButtonLocation( buttonRow, buttonColumn, newButtonRow, newButtonColumn, plys )`
+    Edits the location of a button. If `notification` has already been sent, this cannot add new button rows, and will not clear out empty rows.
   - Hooks:
     - `notification:OnButtonPressed( data )`
       - Called when a button is pressed with the data used to create it.
