@@ -2,12 +2,12 @@
 CFC's Notification Library!
 
 ## Overview
-This library acts as a framework for notifications of any functionality to be created, managed and removed.
-Notifications are treated as objects with methods and fields, these objects have a type which defines how they look, behave, etc. and they can be created and displayed from server or client.
-One can also easily define their own notification types, similar to how you would create a vgui element.
-Each notification object has an ID, simply a string.
-This allows the notification to be blocked (temporarily or permanently) by specific clients (if permitted) and for networking of notification events.
-Notifications will automatically wrap text and grow taller to accomodate long messages.
+This library acts as a framework for notifications of any functionality to be created, managed and removed.  
+Notifications are treated as objects with methods and fields, these objects have a type which defines how they look, behave, etc. and they can be created and displayed from server or client.  
+One can also easily define their own notification types, similar to how you would create a vgui element.  
+Each notification object has an ID, simply a string.  
+This allows the notification to be blocked (temporarily or permanently) by specific clients (if permitted) and for networking of notification events.  
+Notifications will automatically wrap text and grow taller to accomodate long messages.  
 
 ## Client
 Clients can press F3 (or open chat) to release their mouse and interact with notifications.
@@ -23,7 +23,7 @@ They can also fire a test notification, reload the addon, or reset it to factory
 Lastly, they can see their permanently blocked, temporarily (per session) blocked and unblocked notifications, and move them between these 3 categories.
 
 ## Simple usage
-There are several easy to use helper functions for sending out generic notifications.
+There are several easy to use helper functions for sending out generic notifications.  
 All notifications support a filter argument, this argument only functions on the server, and can be any of the following:
 - `nil` - Sends to all players.
 - `table` - Sends to all players in this table.
@@ -55,7 +55,7 @@ The helper functions are as follows:
   Defaults to LOW priority.
 
 - `CFCNotifications.startVote( id, question, time, options, cb )`
-This function is SERVER only.
+This function is SERVER only.  
 Starts a server wide vote, and calls `cb` with whatever the result is.
   - `id` - String identifier for the notification.
   - `title` - Title text.
@@ -64,7 +64,7 @@ Starts a server wide vote, and calls `cb` with whatever the result is.
   - `cb` - Callback function, this is called when everyone has voted, or the time runs out. If 1 winner, the function is called with the string that won (or `true`/`false` if no options given). If there is a draw, a table of winners is given.
 
 ## In-depth usage
-As mentioned, notifications are object. (all helper functions create these objects internally).
+As mentioned, notifications are object. (all helper functions create these objects internally).  
 To create or get a notification object, you can use any of the following:
 - `CFCNotifications.new( id, notificationType, forceCreate )`
   - `id` - Unique string ID for the notification.
@@ -109,17 +109,17 @@ The following fields all have getters and setters defined, e.g. `displayTime` ->
 - `extraHeight` - Provides additional height to the notification, useful for notifications with non-text components.
 
 ### Hooks
-Notifications support hooks for events. If the notification was created on the server, the first argument to every hook will be the player it came from.
-Within any hook, `notification:GetCallingPopupID()` can be called to get the ID of the notification that fired the event.
+Notifications support hooks for events. If the notification was created on the server, the first argument to every hook will be the player it came from.  
+Within any hook, `notification:GetCallingPopupID()` can be called to get the ID of the notification that fired the event.  
 Default hooks are as follows:
 - `notification:OnClose( wasTimeout )` - Called when the notification closes, `wasTimeout` is true if the notification closed due to timeout.
 - `notification:OnOpen( popupID )` - Called when a notification opens, useful when sending notifications from server to quickly get the popupID.
 
-Whenever a hook is called, a client side version of that hook is also called, that version is called [hookname]_CLIENT.  e.g. `notification:OnClose_CLIENT()`
+Whenever a hook is called, a client side version of that hook is also called, that version is called [hookname]_CLIENT.  e.g. `notification:OnClose_CLIENT()`  
 This can be useful when creating notification types, to ensure a hook is called on client.
 
 ### Notification Types
-Below are the predefined notification types (you can define your own) with whatever they define.
+Below are the predefined notification types (you can define your own) with whatever they define.  
 - "Text" - Simple text notification
   - `notification:SetText( text )` - Sets the text for `notification`
   - `notification:SetTextColor( color )` - Sets the text color for `notification`
@@ -130,8 +130,8 @@ Below are the predefined notification types (you can define your own) with whate
   - `notification:SetExtraHeight()` - Sets additional height for `notification`
     Defauts to 40 (plus 50 for each additional row) to give room for the buttons.
   - `notification:AddButton( text, buttonColor, data1, data2, ... )`
-    Adds a button with given text and color. The button text, underline and click animation will be `buttonColor`. `data1, data2, ...` will be passed to OnButtonPressed when the respective button is pressed. If not defined, `text` will be used instead.
-    If this function is never called, the notification will default to a green "Yes" and red "No" button.
+    Adds a button with given text and color. The button text, underline and click animation will be `buttonColor`. `data1, data2, ...` will be passed to OnButtonPressed when the respective button is pressed. If not defined, `text` will be used instead.  
+    If this function is never called, the notification will default to a green "Yes" and red "No" button.  
     There is enough vertical height in each button to fit at most two lines of text.
   - `notification:AddButtonAligned( text, buttonColor, alignment, data1, data2, ... )`
     Adds a button with horizontal text alignment, using the constants below.
@@ -149,12 +149,12 @@ Below are the predefined notification types (you can define your own) with whate
   - `notification:EditButtonAlignment( buttonRow, buttonColumn, alignment, plys )`
     Edits the alignment of a button.
   - `notification:EditButtonLocation( buttonRow, buttonColumn, newButtonRow, newButtonColumn, plys )`
-    Edits the location of a button. If `notification` has already been sent, this cannot add new button rows, and will not clear out empty rows.
+    Edits the location of a button. If `notification` has already been sent, this cannot add new button rows, and will not clear out empty rows.  
   - Hooks:
     - `notification:OnButtonPressed( data )`
       - Called when a button is pressed with the data used to create it.
       - **Remember:** The first argument to this will be the player if the notification was sent from the server.
-- "TextAcknowledge" - Inherits from Buttons, creates an "Okay" and "Never show again" button, where the "Okay" button hides the notification, and "Never show again" permanently ignores it.
+- "TextAcknowledge" - Inherits from Buttons, creates an "Okay" and "Never show again" button, where the "Okay" button hides the notification, and "Never show again" permanently ignores it.  
   This type also fades itself automatically to not get in the way.
 
 ## Making your own notification type
