@@ -149,7 +149,11 @@ Below are the predefined notification types (you can define your own) with whate
   - `notification:EditButtonAlignment( buttonRow, buttonColumn, alignment, plys )`
     Edits the alignment of a button.
   - `notification:EditButtonLocation( buttonRow, buttonColumn, newButtonRow, newButtonColumn, plys )`
-    Edits the location of a button. If `notification` has already been sent, this cannot add new button rows, and will not clear out empty rows.  
+    Edits the location of a button. If `notification` has already been sent, this cannot add new button rows, and will not clear out empty rows.
+  - `notification:EditButtonAutoClose( buttonRow, buttonColumn, autoClose, plys )`
+    Edits whether or not a button being pressed will automatically close `notification`. This is `true` by default.
+  - `notification:EditButtonCanPress( buttonRow, buttonColumn, canPress, plys )`
+    Edits whether or not a button can be pressed. This is `true` by default. 
   - Hooks:
     - `notification:OnButtonPressed( data )`
       - Called when a button is pressed with the data used to create it.

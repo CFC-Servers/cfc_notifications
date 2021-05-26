@@ -17,6 +17,8 @@ function PANEL:Init()
     self.clickAnimState = 0
     self.text = ""
     self.alignment = CFCNotifications.ALIGN_CENTER
+    self.autoClose = true
+    self.canPress = true
     self:SetTextColor( Color( 255, 255, 255 ) )
     self:SetBackgroundColor( Color( 100, 100, 100 ) )
     self.BaseClass.SetText( self, "" ) -- Hide the default panel text since we track and draw the text ourselves
@@ -25,11 +27,18 @@ end
 function PANEL:Think()
     local disabled = self:GetDisabled()
     local textColor = self.textColor
+    local canPress = self.canPress
+
     if disabled then
         self:SetCursor( "no" )
         self.BaseClass.SetTextColor( self, Color( 100, 100, 100 ) )
     else
-        self:SetCursor( "hand" )
+        if canPress then
+            self:SetCursor( "hand" )
+        else
+            self:SetCursor( "no" )
+        end
+
         self.BaseClass.SetTextColor( self, textColor )
     end
 
@@ -39,7 +48,8 @@ function PANEL:Think()
     local change = time - self.lastT
     self.lastT = time
     if change > 1 then change = 0 end -- If there has been > 1 second since last think, dont do the animation
-    if hovered or self.clicked then
+
+    if canPress and ( hovered or self.clicked ) then
         self.animState = math.Clamp( self.animState + change / animSpeed, 0, 1 )
     else
         self.animState = math.Clamp( self.animState - change / animSpeed, 0, 1 )
@@ -86,6 +96,14 @@ function PANEL:SetAlignment( alignment )
     self.alignment = alignment
 end
 
+function PANEL:SetAutoClose( autoClose )
+    self.autoClose = autoClose
+end
+
+function PANEL:SetCanPress( canPress )
+    self.canPress = canPress
+end
+
 function PANEL:Paint( w, h )
     if self:GetDisabled() then return end
 
@@ -93,7 +111,7 @@ function PANEL:Paint( w, h )
     local barHeight = h - uWeight - 4
     local halfWidth = w / 2
 
-    if self.clicked then
+    if self.clicked and self.canPress then
         -- Click animation
         local col = table.Copy( self.textColor )
         col.a = col.a * 0.1
@@ -187,6 +205,8 @@ function PANEL:GetClickAnimationLength()
 end
 
 function PANEL:DoClickInternal()
+    if not self.canPress then return end
+
     self.clicked = true
 end
 

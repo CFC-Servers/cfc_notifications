@@ -2,6 +2,8 @@ local BUTTON_ATTRIBUTES = {
     text = "SetText",
     color = "SetTextColor",
     alignment = "SetAlignment",
+    autoClose = "SetAutoClose",
+    canPress = "SetCanPress",
     location = true,
 }
 
@@ -160,6 +162,8 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
             text = text,
             color = color,
             alignment = alignment,
+            autoClose = true,
+            canPress = true,
             data = { ... }
         }
 
@@ -343,6 +347,14 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
         self:_EditButtonAttribute( "alignment", row, col, alignment, plys, false )
     end
 
+    function CONTEXT:EditButtonAutoClose( row, col, autoClose, plys )
+        self:_EditButtonAttribute( "autoClose", row, col, autoClose, plys, false )
+    end
+
+    function CONTEXT:EditButtonCanPress( row, col, canPress, plys )
+        self:_EditButtonAttribute( "canPress", row, col, canPress, plys, false )
+    end
+
     function CONTEXT:EditButtonLocation( row, col, newRow, newCol, plys )
         local data = {
             row = newRow,
@@ -371,9 +383,12 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
             end
         end
 
-        if self._btns[row][col] then
-            self._btns[row][col]:DoClickInternal()
-            self._btns[row][col]:DoClick()
+        local btn = self._btns[row][col]
+
+        if btn and btn.canPress then
+            btn:DoClickInternal()
+            btn:DoClick()
+
             return true
         end
     end
@@ -414,18 +429,27 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
                 btn:SetTextColor( btnData.color )
                 btn:SetUnderlineWeight( 2 )
                 btn:SetAlignment( btnData.alignment )
+                btn:SetAutoClose( btnData.autoClose )
+                btn:SetCanPress( btnData.canPress )
 
                 function btn:DoClick()
-                    if panel:GetButtonsDisabled() then return end
+                    if panel:GetButtonsDisabled() or not btn.canPress then return end
 
-                    panel:SetButtonsDisabled( true )
+                    local autoClose = btn.autoClose
 
-                    disableButtons( self, btns )
+                    if autoClose then
+                        panel:SetButtonsDisabled( true )
+
+                        disableButtons( self, btns )
+                    end
 
                     -- Delay the close to see the button animation, make it clear that the button is what was selected
                     timer.Simple( 0.5, function()
-                        CFCNotifications._removePopup( panel )
                         this:_callHook( popupID, "OnButtonPressed", unpack( btnData.data or { btnData.text } ) )
+
+                        if not autoClose then return end
+
+                        CFCNotifications._removePopup( panel )
                     end )
                 end
 
