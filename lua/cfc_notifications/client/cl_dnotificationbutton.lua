@@ -25,42 +25,41 @@ function PANEL:Init()
 end
 
 function PANEL:Think()
-    local disabled = self:GetDisabled()
-    local textColor = self.textColor
-    local canPress = self.canPress
+    local clicked = self.clicked
 
-    if disabled then
-        self:SetCursor( "no" )
-        self.BaseClass.SetTextColor( self, Color( 100, 100, 100 ) )
-    else
-        if canPress then
-            self:SetCursor( "hand" )
-        else
-            self:SetCursor( "no" )
-        end
-
-        self.BaseClass.SetTextColor( self, textColor )
-    end
-
-    local hovered = self:IsHovered()
     local time = SysTime()
     self.lastT = self.lastT or time
     local change = time - self.lastT
     self.lastT = time
     if change > 1 then change = 0 end -- If there has been > 1 second since last think, dont do the animation
 
-    if canPress and ( hovered or self.clicked ) then
+    if self.canPress and ( self:IsHovered() or clicked ) then
         self.animState = math.Clamp( self.animState + change / animSpeed, 0, 1 )
     else
         self.animState = math.Clamp( self.animState - change / animSpeed, 0, 1 )
     end
 
-    if self.clicked then
+    if clicked then
         self.clickAnimState = self.clickAnimState + change
         if self.clickAnimState >= self.clickAnimationLength + 0.4 then
             self.clicked = false
             self.clickAnimState = 0
         end
+    end
+end
+
+function PANEL:_UpdateDisabledStatus()
+    if self:GetDisabled() then
+        self:SetCursor( "no" )
+        self.BaseClass.SetTextColor( self, Color( 100, 100, 100 ) )
+    else
+        if self.canPress then
+            self:SetCursor( "hand" )
+        else
+            self:SetCursor( "no" )
+        end
+
+        self.BaseClass.SetTextColor( self, self.textColor )
     end
 end
 
@@ -74,8 +73,19 @@ function PANEL:GetText()
 end
 
 function PANEL:SetTextColor( textColor )
-    self.BaseClass.SetTextColor( self, textColor )
     self.textColor = textColor
+
+    if self:GetDisabled() then
+        self.BaseClass.SetTextColor( self, Color( 100, 100, 100 ) )
+    else
+        self.BaseClass.SetTextColor( self, textColor )
+    end
+end
+
+function PANEL:SetDisabled( disabled )
+    self.BaseClass.SetDisabled( self, disabled )
+    
+    self:_UpdateDisabledStatus()
 end
 
 local function isAlignmentValid( alignment )
@@ -102,6 +112,8 @@ end
 
 function PANEL:SetCanPress( canPress )
     self.canPress = canPress
+
+    self:_UpdateDisabledStatus()
 end
 
 function PANEL:Paint( w, h )
