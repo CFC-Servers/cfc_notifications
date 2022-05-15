@@ -383,7 +383,7 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
             end
         end
 
-        local btn = self._btns[row][col]
+        local btn = ( self._btns[row] or {} )[col]
 
         if btn and btn.canPress then
             btn:DoClickInternal()
