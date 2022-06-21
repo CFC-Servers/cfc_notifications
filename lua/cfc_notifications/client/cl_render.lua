@@ -260,13 +260,13 @@ local function addNotifHooks( panel, popupID )
         CFCNotifications._removePopup( self )
     end
 
-    function panel:OnIgnore( permanent )
+    function panel:OnIgnore( permanent, hidePrint )
         for k, v in pairs( CFCNotifications._popups ) do
             if v.notification == self.data.notification then
                 v.panel:OnClose()
             end
         end
-        self.data.notification:Ignore( permanent )
+        self.data.notification:Ignore( permanent, hidePrint )
     end
 end
 

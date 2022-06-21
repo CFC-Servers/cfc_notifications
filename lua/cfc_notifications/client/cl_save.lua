@@ -5,12 +5,16 @@ CFCNotifications._SAVE_FILE_NAME = "cfc_notifications_data.json"
 
 -- Add some way to browse ignores in settings and call Unignore on them
 
+local COLOR_GREY = Color( 150, 150, 150, 255 )
+local COLOR_DARK_GREY = Color( 41, 41, 41, 255 )
+local COLOR_HIGHLIGHT = Color( 255, 230, 75, 255 )
+
 function CFCNotifications.Base:ShouldShowNotification()
     local id = self:GetID()
     return not CFCNotifications._tempIgnores[id] and not CFCNotifications._permIgnores[id]
 end
 
-function CFCNotifications.Base:Ignore( permanent )
+function CFCNotifications.Base:Ignore( permanent, hidePrint )
     local id = self:GetID()
 
     if permanent then
@@ -21,6 +25,28 @@ function CFCNotifications.Base:Ignore( permanent )
     end
 
     CFCNotifications._reloadIgnoredPanels()
+
+    if hidePrint then return end
+
+    if permanent then
+        chat.AddText(
+            COLOR_DARK_GREY, "[",
+            COLOR_GREY, "Notifications",
+            COLOR_DARK_GREY, "] ",
+            color_white, "You will never see ",
+            COLOR_HIGHLIGHT, tostring( id ),
+            color_white, " notifications again."
+        )
+    else
+        chat.AddText(
+            COLOR_DARK_GREY, "[",
+            COLOR_GREY, "Notifications",
+            COLOR_DARK_GREY, "] ",
+            color_white, "Temporarily ignoring ",
+            COLOR_HIGHLIGHT, tostring( id ),
+            color_white, " notifications for this session."
+        )
+    end
 end
 
 function CFCNotifications.Base:Unignore()
