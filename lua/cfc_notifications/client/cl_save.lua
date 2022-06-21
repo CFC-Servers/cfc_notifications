@@ -18,9 +18,13 @@ function CFCNotifications.Base:Ignore( permanent, hidePrint )
     local id = self:GetID()
 
     if permanent then
+        if CFCNotifications._permIgnores[id] then return end
+
         CFCNotifications._permIgnores[id] = true
         CFCNotifications.saveIgnores()
     else
+        if CFCNotifications._tempIgnores[id] then return end
+
         CFCNotifications._tempIgnores[id] = true
     end
 
