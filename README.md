@@ -96,6 +96,8 @@ All notification types support the following by default:
   Stops any existing repeated or delayed notification sends.
 - `notification:HasTimer()`
   Returns if currently waiting on delay or repeated send.
+- `notification:Ignore( permanent, hidePrint )`
+  CLIENT ONLY. Closes the notification and blocks future notifs with the same ID, either for the current session only, or permanently. By default, will print to chat with a corresponding message.
 - `notification:GetID()`
 - `notification:GetType()`
 
