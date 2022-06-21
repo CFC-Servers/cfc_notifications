@@ -261,11 +261,19 @@ local function addNotifHooks( panel, popupID )
     end
 
     function panel:OnIgnore( permanent, hidePrint )
-        for k, v in pairs( CFCNotifications._popups ) do
-            if v.notification == self.data.notification then
-                v.panel:OnClose()
+        local popups = CFCNotifications._popups
+        local popupCount = #popups
+        local notifID = self.data.notifID
+
+        -- TODO: Server can send multiple notifications with identical IDs. Probably should fix the root of that issue, when client receives new notifs from server.
+        for i = popupCount, 1, -1 do
+            local popup = popups[i]
+
+            if popup.notifID == notifID then
+                popup.panel:OnClose()
             end
         end
+
         self.data.notification:Ignore( permanent, hidePrint )
     end
 end
@@ -421,6 +429,7 @@ function CFCNotifications._addNewPopup( notif )
         notification = notif,
         priority = priority,
         popupID = id,
+        notifID = notif:GetID(),
     }
 
     addNotifHooks( panel, id )
