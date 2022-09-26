@@ -23,7 +23,7 @@ CFCNotifications.playerNetQueues = {}
 local function splitReady( plys )
     local ready = {}
     local notReady = {}
-    for k, ply in pairs( plys ) do
+    for _, ply in pairs( plys ) do
         if CFCNotifications.playersReady[ply] then
             table.insert( ready, ply )
         else
@@ -56,7 +56,7 @@ function CFCNotifications._sendMessage( name, func, plys )
         net.Send( ready )
     end
 
-    for k, ply in pairs( notReady ) do
+    for _, ply in pairs( notReady ) do
         CFCNotifications.playerNetQueues[ply] = CFCNotifications.playerNetQueues[ply] or {}
         table.insert( CFCNotifications.playerNetQueues[ply], function()
             net.Start( name )
@@ -73,7 +73,7 @@ function CFCNotifications._sendClients( players, notif )
     end, players )
 end
 
-net.Receive( "CFC_NotificationEvent", function( len, ply )
+net.Receive( "CFC_NotificationEvent", function( _, ply )
     local id = net.ReadString()
     local popupID = net.ReadUInt( 16 )
     local funcName = net.ReadString()
@@ -119,7 +119,7 @@ function CFCNotifications.Base:GetPopupIDs( ply )
     return {}
 end
 
-net.Receive( "CFC_NotificationReady", function( len, ply )
+net.Receive( "CFC_NotificationReady", function( _, ply )
     hook.Run( "CFC_NotificationsReady", ply )
     sendQueuedMessages( ply )
     for id, notif in pairs( CFCNotifications.Notifications ) do

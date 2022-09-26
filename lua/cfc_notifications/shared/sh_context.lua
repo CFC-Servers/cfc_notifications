@@ -10,7 +10,7 @@ function CFCNotifications._getTimerName()
 end
 
 local function containsType( tab, t )
-    for k, v in pairs( tab ) do
+    for _, v in pairs( tab ) do
         if type( v ) ~= t then
             return false
         end
@@ -24,7 +24,7 @@ CFCNotifications.Base = CONTEXT
 
 function CONTEXT:Remove()
     if SERVER then
-        for k, v in pairs( player.GetAll() ) do
+        for _, v in pairs( player.GetAll() ) do
             self:RemovePopups( v )
         end
 
@@ -183,8 +183,8 @@ addField( "ignoreable", true, "boolean", ignoreableChanged )
 
 
 -- Empty implementations to be overwritten in registerType
-function CONTEXT:PopulatePanel( panel ) end
-function CONTEXT:OnAltNum( key ) end
+function CONTEXT:PopulatePanel() end
+function CONTEXT:OnAltNum() end
 -- End
 
 function CONTEXT:_callHook( popupID, hookName, ... )
@@ -219,6 +219,6 @@ end
 
 -- Empty implementations to be overwritten in register ( by you! )
 
-function CONTEXT:OnClose( wasTimeout ) end
-function CONTEXT:OnOpen( popupID ) end
+function CONTEXT:OnClose() end
+function CONTEXT:OnOpen() end
 -- End
