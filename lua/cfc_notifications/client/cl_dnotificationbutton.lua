@@ -84,7 +84,7 @@ end
 
 function PANEL:SetDisabled( disabled )
     self.BaseClass.SetDisabled( self, disabled )
-    
+
     self:_UpdateDisabledStatus()
 end
 
