@@ -124,7 +124,7 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
     CFCNotifications.contextHelpers.addField( CONTEXT, "text", "", "string" )
     CFCNotifications.contextHelpers.addField( CONTEXT, "textColor", Color( 255, 255, 255 ), "Color" )
     -- Args passed to AddButton after colour are passed into this button or the button text
-    function CONTEXT:OnButtonPressed( data ) end
+    function CONTEXT:OnButtonPressed() end
 
     CONTEXT._timed = false
     -- These require player input, so are more important than other notifications
@@ -371,7 +371,7 @@ CFCNotifications.registerNotificationType( "Buttons", function( CONTEXT )
         local row, col
 
         for r, btnRow in pairs( self._btns ) do
-            for c, btn in pairs( btnRow ) do
+            for c in pairs( btnRow ) do
                 ind = ind + 1
 
                 if ind == key then

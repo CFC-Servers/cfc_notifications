@@ -152,7 +152,7 @@ function CFCNotifications.getSetting( name )
     local cVar = GetConVar( "cfc_notifications_" .. name )
     if not cVar then return nil end
 
-    for k, v in pairs( CFCNotifications._settingsTemplate ) do
+    for _, v in pairs( CFCNotifications._settingsTemplate ) do
         if v.name == name then
             local val = typeGetters[v.type]( cVar )
 
@@ -170,7 +170,7 @@ function CFCNotifications.clearSettingsCache()
 end
 
 function CFCNotifications.resetSettings()
-    for k, setting in pairs( CFCNotifications._settingsTemplate ) do
+    for _, setting in pairs( CFCNotifications._settingsTemplate ) do
         if setting.type ~= "action" then
             local val = "cfc_notifications_" .. setting.name
             local cv = GetConVar( val )
@@ -214,11 +214,11 @@ function typeValidators.int( data, val )
         return false, "Not an integer"
     end
 end
-function typeValidators.bool( data, val )
+function typeValidators.bool( _, val )
     val = string.lower( val )
 
-    local tVals = {"1", "true", "t"}
-    local fVals = {"0", "false", "f"}
+    local tVals = { "1", "true", "t" }
+    local fVals = { "0", "false", "f" }
 
     if table.HasValue( tVals, val ) then
         return true, "1"
@@ -228,7 +228,7 @@ function typeValidators.bool( data, val )
         return false, "Invalid boolean value"
     end
 end
-function typeValidators.string( data, val )
+function typeValidators.string( _, val )
     return true, val
 end
 
@@ -239,7 +239,7 @@ hook.Add( "CFC_Notifications_init", "settings_init", function()
 end )
 
 hook.Add( "Initialize", "cfc_notifications_init", function()
-    for k, setting in pairs( CFCNotifications._settingsTemplate ) do
+    for _, setting in pairs( CFCNotifications._settingsTemplate ) do
         local val = "cfc_notifications_" .. setting.name
 
         if setting.type == "action" then
@@ -303,7 +303,7 @@ local function addSettingsOptions()
     panel:Help( "Some settings require you to reload the addon for them to take effect." )
     panel:Help( "The reload button will turn red if it is required" )
 
-    for k, setting in pairs( CFCNotifications._settingsTemplate ) do
+    for _, setting in pairs( CFCNotifications._settingsTemplate ) do
         if not setting.noMenu then
             local val = "cfc_notifications_" .. setting.name
             local data = {}
@@ -369,7 +369,7 @@ function CFCNotifications.addOptionsCategory( name )
         local isExpanded = self:GetExpanded()
         if isExpanded then return end -- Can't have none open
         self:oldToggle()
-        for k, v in pairs( CFCNotifications.MenuOptions.contents:GetChildren() ) do
+        for _, v in pairs( CFCNotifications.MenuOptions.contents:GetChildren() ) do
             if v ~= self and v:GetExpanded() then
                 v:oldToggle()
             end

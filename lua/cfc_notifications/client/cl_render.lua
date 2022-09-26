@@ -93,7 +93,7 @@ hook.Add( "PlayerBindPress", "CFCNotifcations_render_numdown", function( _, bind
 end )
 
 local function solidColorPaint( col )
-    return function( self, w, h )
+    return function( _, w, h )
         surface.SetDrawColor( col )
         surface.DrawRect( 0, 0, w, h )
     end
@@ -340,7 +340,7 @@ local function textWrap( text, font, maxWidth )
 end
 
 function CFCNotifications._removePopupByID( id )
-    for k, v in pairs( CFCNotifications._popups ) do
+    for _, v in pairs( CFCNotifications._popups ) do
         if v.popupID == id then
             CFCNotifications._removePopup( v.panel )
             return true
@@ -350,7 +350,7 @@ function CFCNotifications._removePopupByID( id )
 end
 
 function CFCNotifications._removePopupByNotificationID( id )
-    for k, v in pairs( CFCNotifications._popups ) do
+    for _, v in pairs( CFCNotifications._popups ) do
         if v.notification:GetID() == id then
             CFCNotifications._removePopup( v.panel )
         end
@@ -371,7 +371,7 @@ function CFCNotifications._removePopup( panel )
         panel._shouldRemove = true
 
         local leftOpen = 0
-        for k, v in pairs( CFCNotifications._popups ) do
+        for _, v in pairs( CFCNotifications._popups ) do
             if not v.panel._shouldRemove then
                 leftOpen = leftOpen + 1
             end
@@ -501,7 +501,7 @@ end
 
 function CFCNotifications.Base:GetPopupIDs()
     local out = {}
-    for k, v in pairs( CFCNotifications._popups ) do
+    for _, v in pairs( CFCNotifications._popups ) do
         if v.notification == self then
             table.insert( out, v.popupID )
         end

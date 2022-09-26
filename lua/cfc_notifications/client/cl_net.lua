@@ -1,4 +1,4 @@
-net.Receive( "CFC_NotificationSend", function( len )
+net.Receive( "CFC_NotificationSend", function()
     local notif = net.ReadTable()
     notif._fromServer = true
     -- Fix up the metatable
@@ -13,7 +13,7 @@ end )
 
 CFCNotifications._serverNotificationIDs = {}
 
-net.Receive( "CFC_NotificationExists", function( len )
+net.Receive( "CFC_NotificationExists", function()
     local id = net.ReadString()
     local exists = net.ReadBool()
     local hasValue = table.HasValue( CFCNotifications._serverNotificationIDs, id )
@@ -29,7 +29,7 @@ net.Receive( "CFC_NotificationExists", function( len )
     end
 end )
 
-net.Receive( "CFC_NotificationEvent", function( len )
+net.Receive( "CFC_NotificationEvent", function()
     local id = net.ReadString()
     local funcName = net.ReadString()
     local data = net.ReadTable()

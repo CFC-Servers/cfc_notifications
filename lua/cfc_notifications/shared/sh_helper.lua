@@ -44,7 +44,7 @@ if SERVER then
         local plyCount = 0
         local voteCount = 0
 
-        for k, v in pairs( options or {} ) do
+        for _, v in pairs( options or {} ) do
             notif:AddButton( v, Color( 255, 255, 255 ), v )
         end
 
@@ -90,7 +90,7 @@ if SERVER then
             timer.Simple( 1, endVote )
         end )
 
-        function notif:OnButtonPressed( ply, option )
+        function notif:OnButtonPressed( _, option )
             if ended then return end
 
             if type( option ) == "boolean" then option = option and "Yes" or "No" end
@@ -107,7 +107,7 @@ if SERVER then
             end
         end
 
-        function notif:OnClose( ply )
+        function notif:OnClose()
             if ended then return end
 
             plyCount = plyCount + 1
@@ -118,7 +118,7 @@ if SERVER then
             end
         end
 
-        function notif:OnOpen( ply )
+        function notif:OnOpen()
             plyTotal = plyTotal + 1
         end
 

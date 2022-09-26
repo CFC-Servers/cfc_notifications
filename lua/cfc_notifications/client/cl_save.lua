@@ -98,7 +98,7 @@ function CFCNotifications.getUnignored()
         end
     end
 
-    for k, v in pairs( CFCNotifications._serverNotificationIDs ) do
+    for _, v in pairs( CFCNotifications._serverNotificationIDs ) do
         if not CFCNotifications._tempIgnores[v] and not CFCNotifications._permIgnores[v] and not table.HasValue( out, v ) then
             table.insert( out, v )
         end
@@ -114,19 +114,19 @@ function CFCNotifications._reloadIgnoredPanels()
 
     panels[1]:Clear()
 
-    for k, v in ipairs( CFCNotifications.getTempIgnored() ) do
+    for _, v in ipairs( CFCNotifications.getTempIgnored() ) do
         panels[1]:AddItem( v )
     end
 
     panels[2]:Clear()
 
-    for k, v in ipairs( CFCNotifications.getPermIgnored() ) do
+    for _, v in ipairs( CFCNotifications.getPermIgnored() ) do
         panels[2]:AddItem( v )
     end
 
     panels[3]:Clear()
 
-    for k, v in ipairs( CFCNotifications.getUnignored() ) do
+    for _, v in ipairs( CFCNotifications.getUnignored() ) do
         panels[3]:AddItem( v )
     end
 end
