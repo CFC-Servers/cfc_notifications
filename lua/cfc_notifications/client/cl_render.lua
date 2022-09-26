@@ -501,7 +501,7 @@ end
 
 function CFCNotifications.Base:GetPopupIDs()
     local out = {}
-    for k, v in pairs( CFCNotifications._popups ) do
+    for _, v in pairs( CFCNotifications._popups ) do
         if v.notification == self then
             table.insert( out, v.popupID )
         end

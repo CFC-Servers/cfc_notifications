@@ -152,7 +152,7 @@ function CFCNotifications.getSetting( name )
     local cVar = GetConVar( "cfc_notifications_" .. name )
     if not cVar then return nil end
 
-    for k, v in pairs( CFCNotifications._settingsTemplate ) do
+    for _, v in pairs( CFCNotifications._settingsTemplate ) do
         if v.name == name then
             local val = typeGetters[v.type]( cVar )
 
@@ -170,7 +170,7 @@ function CFCNotifications.clearSettingsCache()
 end
 
 function CFCNotifications.resetSettings()
-    for k, setting in pairs( CFCNotifications._settingsTemplate ) do
+    for _, setting in pairs( CFCNotifications._settingsTemplate ) do
         if setting.type ~= "action" then
             local val = "cfc_notifications_" .. setting.name
             local cv = GetConVar( val )
@@ -214,11 +214,11 @@ function typeValidators.int( data, val )
         return false, "Not an integer"
     end
 end
-function typeValidators.bool( data, val )
+function typeValidators.bool( _, val )
     val = string.lower( val )
 
-    local tVals = {"1", "true", "t"}
-    local fVals = {"0", "false", "f"}
+    local tVals = { "1", "true", "t" }
+    local fVals = { "0", "false", "f" }
 
     if table.HasValue( tVals, val ) then
         return true, "1"
