@@ -188,7 +188,7 @@ local typeValidators = {}
 function typeValidators.float( data, val )
     local n = tonumber( val )
     if n then
-        local range = "( " .. ( data.min or "-inf" ) .. ", " .. ( data.max or "inf" ) .. " )"
+        local range = "( " .. (data.min or "-inf") .. ", " .. (data.max or "inf") .. " )"
 
         if data.min and n < data.min then
             return false, "Value too low, must be in range " .. range
@@ -203,6 +203,7 @@ function typeValidators.float( data, val )
         return false, "Not a number"
     end
 end
+
 function typeValidators.int( data, val )
     local success, err = typeValidators.float( data, val )
     if not success then return false, err end
@@ -214,11 +215,12 @@ function typeValidators.int( data, val )
         return false, "Not an integer"
     end
 end
+
 function typeValidators.bool( data, val )
     val = string.lower( val )
 
-    local tVals = {"1", "true", "t"}
-    local fVals = {"0", "false", "f"}
+    local tVals = { "1", "true", "t" }
+    local fVals = { "0", "false", "f" }
 
     if table.HasValue( tVals, val ) then
         return true, "1"
@@ -228,6 +230,7 @@ function typeValidators.bool( data, val )
         return false, "Invalid boolean value"
     end
 end
+
 function typeValidators.string( data, val )
     return true, val
 end
@@ -242,7 +245,7 @@ hook.Add( "Initialize", "cfc_notifications_init", function()
     for k, setting in pairs( CFCNotifications._settingsTemplate ) do
         local val = "cfc_notifications_" .. setting.name
 
-        if setting.type == "action" then
+        if setting.type == "action" and concommand.GetTable()[val] == nil then
             concommand.Add( val, setting.onClick )
         elseif not ConVarExists( val ) then
             local def = setting.default
