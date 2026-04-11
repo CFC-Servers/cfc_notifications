@@ -107,6 +107,7 @@ hook.Add( "CFC_Notifications_init", "render_init", function()
     container.Paint = nil
     container:SetSize( wide, h )
     container:SetPos( ScrW() - wide, 0 )
+    container:SetMouseInputEnabled( false )
     function container:Think()
         self:MoveToBack()
     end
@@ -379,6 +380,7 @@ function CFCNotifications._removePopup( panel )
 
         if leftOpen == 0 then
             CFCNotifications.freeCursorLabel:CustomAlphaTo( 0, 0.1 )
+            CFCNotifications.container:SetMouseInputEnabled( false )
             clickerEnabled = false
             gui.EnableScreenClicker( clickerEnabled )
         end
@@ -397,6 +399,8 @@ function CFCNotifications._addNewPopup( notif )
     local canIgnore = notif:GetIgnoreable()
     local priority = notif:GetPriority()
     local pWidth = CFCNotifications.getSetting( "size_x" )
+
+    CFCNotifications.container:SetMouseInputEnabled( true )
 
     local panel = vgui.Create( "DNotification", CFCNotifications.container )
     panel:SetSize( pWidth, 1 )
